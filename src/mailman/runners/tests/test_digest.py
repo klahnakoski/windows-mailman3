@@ -442,12 +442,12 @@ Content-Transfer-Encoding: 7bit
         # The MIME version contains a mix of French and Japanese.  The digest
         # chrome added by Mailman is in French.
         self.assertEqual(mime['subject'].encode(),
-                         '=?iso-8859-1?q?Groupe_Test=2C_Vol_1=2C_Parution_1?=')
+                         '=?utf-8?q?Groupe_Test=2C_Vol_1=2C_Parution_1?=')
         self.assertEqual(str(mime['subject']),
                          'Groupe Test, Vol 1, Parution 1')
-        # The first subpart contains the iso-8859-1 masthead.
+        # The first subpart contains the utf-8 masthead.
         masthead = mime.get_payload(0).get_payload(decode=True).decode(
-            'iso-8859-1')
+            'utf-8')
         self.assertMultiLineEqual(masthead.splitlines()[0],
                                   'Envoyez vos messages pour la liste Test à')
         # The second subpart contains the utf-8 table of contents.

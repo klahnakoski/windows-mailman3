@@ -54,7 +54,7 @@ Dotted section names work too, for example, to get the French language
 settings section.
 
     >>> dump_json('http://localhost:9001/3.0/system/configuration/language.fr')
-    charset: iso-8859-1
+    charset: utf-8
     description: French
     enabled: yes
     http_etag: ...
