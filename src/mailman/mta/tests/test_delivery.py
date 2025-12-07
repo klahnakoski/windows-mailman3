@@ -459,8 +459,8 @@ Message-ID:
         msgdata = dict(recipients=['anne@example.org'], to_list=True)
         self._deliverer(self._mlist, self._msg, msgdata)
         logs = mark.read()
-        self.assertRegex(logs, r' \(\d+\) <AM6PR09MB347488.*smtp')
-        self.assertRegex(logs, r' \(\d+\) <AM6PR09MB347488.*post')
+        self.assertRegex(logs, r' \w+\[\d+\] <AM6PR09MB347488.*smtp')
+        self.assertRegex(logs, r' \w+\[\d+\] <AM6PR09MB347488.*post')
 
     def test_logging_with_header_instance(self):
         msgdata = dict(recipients=['test@example.com', 'bart@example.org'])

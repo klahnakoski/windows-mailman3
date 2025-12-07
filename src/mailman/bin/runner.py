@@ -23,6 +23,7 @@ import click
 import signal
 import logging
 import traceback
+import multiprocessing
 
 from mailman.config import config
 from mailman.core.i18n import _
@@ -156,6 +157,7 @@ def main(ctx, config_file, verbose, list_runners, once, runner_spec):
     if runner_spec is None and not list_runners:
         ctx.fail(_('No runner name given.'))
 
+    multiprocessing.current_process().name = runner_spec[0]
     try:
         import setproctitle
         setproctitle.setproctitle(

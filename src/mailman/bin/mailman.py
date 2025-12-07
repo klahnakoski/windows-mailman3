@@ -18,6 +18,7 @@
 """The 'mailman' command dispatcher."""
 import os
 import click
+import multiprocessing
 
 from mailman.commands.cli_help import help as help_command
 from mailman.config import config
@@ -123,6 +124,7 @@ def main(ctx, config_file, run_as_root):
     The GNU Mailman mailing list management system
     https://www.list.org
     """
+    multiprocessing.current_process().name = 'mailman'
     # Only run as root if allowed.
     if os.geteuid() == 0 and not run_as_root:
         raise click.UsageError(_("""\

@@ -23,6 +23,7 @@ import click
 import signal
 import socket
 import logging
+import multiprocessing
 
 from datetime import timedelta
 from enum import Enum
@@ -649,6 +650,7 @@ def main(config_file, restartable, force, runners, verbose):
     master also leaves its own process id in the file `data/master.pid`
     but you normally don't need to use this pid directly.
     """
+    multiprocessing.current_process().name = 'master'
     try:
         import setproctitle
         setproctitle.setproctitle('mailman: master')  # pragma: nocover

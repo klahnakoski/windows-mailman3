@@ -148,8 +148,7 @@ class Runner:
 
     def _one_iteration(self):
         """See `IRunner`."""
-        me = self.__class__.__name__
-        dlog.debug('[%s] starting oneloop', me)
+        dlog.debug('Starting oneloop')
         # List all the files in our queue directory.  The switchboard is
         # guaranteed to hand us the files in FIFO order.
         if self.switchboard is None:
@@ -157,7 +156,7 @@ class Runner:
         else:
             files = self.switchboard.files
         for filebase in files:
-            dlog.debug('[%s] processing filebase: %s', me, filebase)
+            dlog.debug('Processing filebase: %s', filebase)
             try:
                 # Ask the switchboard for the message and metadata objects
                 # associated with this queue file.
@@ -175,9 +174,9 @@ class Runner:
                 config.db.abort()
                 continue
             try:
-                dlog.debug('[%s] processing onefile', me)
+                dlog.debug('Processing onefile')
                 self._process_one_file(msg, msgdata)
-                dlog.debug('[%s] finishing filebase: %s', me, filebase)
+                dlog.debug('Finishing filebase: %s', filebase)
                 self.switchboard.finish(filebase)
             except Exception as error:
                 # All runners that implement _dispose() must guarantee that
@@ -208,15 +207,15 @@ class Runner:
                     self.switchboard.finish(filebase, preserve=True)
                 config.db.abort()
             # Other work we want to do each time through the loop.
-            dlog.debug('[%s] doing periodic', me)
+            dlog.debug('Doing periodic')
             self._do_periodic()
-            dlog.debug('[%s] committing transaction', me)
+            dlog.debug('Committing transaction')
             config.db.commit()
-            dlog.debug('[%s] checking short circuit', me)
+            dlog.debug('Checking short circuit')
             if self._short_circuit():
-                dlog.debug('[%s] short circuiting', me)
+                dlog.debug('Short circuiting')
                 break
-        dlog.debug('[%s] ending oneloop: %s', me, len(files))
+        dlog.debug('Ending oneloop: %s', len(files))
         return len(files)
 
     def _process_one_file(self, msg, msgdata):
