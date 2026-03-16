@@ -224,9 +224,11 @@ class MailingList(Model):
     archive_rendering_mode = Column(Enum(ArchiveRenderingMode))
     # ORM relationships.
     header_matches = relationship(
-        'HeaderMatch', backref='mailing_list',
+        'HeaderMatch', back_populates='mailing_list',
         cascade="all, delete-orphan",
         order_by="HeaderMatch._position")
+    acceptable_aliases = relationship(
+        'AcceptableAlias', back_populates='mailing_list')
 
     def __init__(self, fqdn_listname):
         super().__init__()
@@ -562,7 +564,8 @@ class AcceptableAlias(Model):
     mailing_list_id = Column(
         Integer, ForeignKey('mailinglist.id'),
         index=True, nullable=False)
-    mailing_list = relationship('MailingList', backref='acceptablealias')
+    mailing_list = relationship(
+        'MailingList', back_populates='acceptable_aliases')
     alias = Column(SAUnicode, index=True, nullable=False)
 
     def __init__(self, mailing_list, alias):
@@ -691,6 +694,8 @@ class HeaderMatch(Model):
         Integer,
         ForeignKey('mailinglist.id'),
         index=True, nullable=False)
+    mailing_list = relationship(
+        'MailingList', back_populates='header_matches')
 
     _position = Column('position', Integer, index=True, default=0)
     header = Column(SAUnicode)
