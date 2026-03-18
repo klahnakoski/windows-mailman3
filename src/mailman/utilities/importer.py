@@ -20,6 +20,7 @@
 import os
 import re
 import sys
+import math
 import click
 import logging
 import datetime
@@ -233,6 +234,7 @@ TYPES = dict(
     autorespond_requests=ResponseAction,
     autoresponse_grace_period=days_to_delta,
     bounce_info_stale_after=seconds_to_delta,
+    bounce_score_threshold=math.ceil,
     bounce_you_are_disabled_warnings_interval=seconds_to_delta,
     default_nonmember_action=nonmember_action_mapping,
     dmarc_addresses=list_members_to_unicode,
