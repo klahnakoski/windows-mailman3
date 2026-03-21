@@ -72,5 +72,7 @@ class MailArchive:
             config.switchboards['out'].enqueue(
                 msg,
                 listid=mlist.list_id,
-                recipients=[self.recipient])
+                recipients=[self.recipient],
+                nodecorate=True,
+            )
         return None

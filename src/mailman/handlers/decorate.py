@@ -23,7 +23,6 @@ import logging
 
 from email.mime.text import MIMEText
 from email.utils import formataddr
-from mailman.archiving.mailarchive import MailArchive
 from mailman.core.i18n import _
 from mailman.interfaces.handler import IHandler
 from mailman.interfaces.mailinglist import IListArchiverSet
@@ -42,10 +41,6 @@ def process(mlist, msg, msgdata):
     """Decorate the message with headers and footers."""
     # Digests and Mailman-craft messages should not get additional headers.
     if msgdata.get('isdigest') or msgdata.get('nodecorate'):
-        return
-    # Kludge to not decorate mail for Mail-Archive.com.
-    if ('recipients' in msgdata and len(msgdata['recipients']) == 1 and
-            list(msgdata['recipients'])[0] == MailArchive().recipient):
         return
     d = {}
     member = msgdata.get('member')
