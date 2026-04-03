@@ -283,7 +283,7 @@ class TestSubjectPrefix(unittest.TestCase):
         decoded = decode_header(msg['Subject'])
         self.assertEqual(decoded,
                          [(b'[Test] ', 'us-ascii'),
-                          (b'\xd6\xd0\xce\xc4', 'eucgb2312_cn')])
+                          (b'\xd6\xd0\xce\xc4', 'gb2312')])
 
     def test_non_ascii_list_folded_subject(self):
         # Test a folded subject header on a list with non-ascii
