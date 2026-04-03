@@ -466,7 +466,7 @@ Message-ID:
         msgdata = dict(recipients=['test@example.com', 'bart@example.org'])
         self._mlist.personalize = Personalization.none
         msgdata['recipients'] = ['test@example.com', 'bart@example.org']
-        self._msg['CC'] = make_header([('bart@example.org', None)])
+        self._msg['Cc'] = make_header([('bart@example.org', None)])
         config.push('logging', """
         [logging.smtp]
         success: post for $recip recips

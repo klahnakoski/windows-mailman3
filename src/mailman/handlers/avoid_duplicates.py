@@ -63,7 +63,7 @@ class AvoidDuplicates:
             }
             if header == 'cc':
                 # Yes, it's possible that an address is mentioned in multiple
-                # CC headers using different names.  In that case, the last
+                # Cc headers using different names.  In that case, the last
                 # real name will win, but that doesn't seem like such a big
                 # deal.  Besides, how else would you chose?
                 cc_addresses.update(header_addresses)
@@ -102,7 +102,7 @@ class AvoidDuplicates:
                 newrecips.add(r)
         # Set the new list of recipients.  XXX recips should always be a set.
         msgdata['recipients'] = list(newrecips)
-        # RFC 2822 specifies zero or one CC header
+        # RFC 2822 specifies zero or one Cc header
         del msg['cc']
         if cc_addresses:
-            msg['CC'] = COMMASPACE.join(cc_addresses.values())
+            msg['Cc'] = COMMASPACE.join(cc_addresses.values())

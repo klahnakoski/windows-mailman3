@@ -868,7 +868,7 @@ Features
 Bugs
 ----
 * A list member with ``receive_list_copy`` set to ``False`` who is addressed in
-  ``CC`` will now be removed from ``CC`` even if this results in no ``CC``.
+  ``Cc`` will now be removed from ``Cc`` even if this results in no ``Cc``.
   (:issue:`575`)
 * ``X-Mailman-Approved-At`` header now has correct timezone.  (:issue:`584`)
 * A spurious ``invalid FilterAction: discard. Treating as discard`` log

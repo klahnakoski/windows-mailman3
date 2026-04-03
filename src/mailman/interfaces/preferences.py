@@ -43,7 +43,7 @@ class IPreferences(Interface):
         """Should an explicit recipient receive a list copy?
 
         When a list member is explicitly named in a message's recipients
-        (e.g. the To or CC headers), and this preference is True, the
+        (e.g. the To or Cc headers), and this preference is True, the
         recipient will still receive a list copy of the message.  When False,
         this list copy will be suppressed.  None means no preference is
         specified.""")
