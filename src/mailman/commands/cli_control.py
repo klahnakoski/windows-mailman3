@@ -207,7 +207,11 @@ class Reopen:
 
 @click.command(
     cls=I18nCommand,
-    help=_('Stop and restart the Mailman runner subprocesses.'))
+    help=_('Stop and restart the Mailman runner subprocesses. '
+           'Note: runners that have died and are not currently '
+           'running will not be restarted by this command. '
+           'To restart dead runners, use mailman stop '
+           'followed by mailman start.'))
 @click.option(
     '--quiet', '-q',
     is_flag=True, default=False,
