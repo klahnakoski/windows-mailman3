@@ -16,6 +16,9 @@ Here is a history of user visible changes to Mailman.
 
 Bugs fixed
 ----------
+* Fixed: mailman restart --help now documents that dead runner processes will
+  not be restarted, and that 'mailman stop; mailman start' can be used to
+  restart them (issue #1082).
 * Incoming messages rejected with defects now include the defects list in the
   status and the rejection and defects list is logged.  (:issue:`351`)
 * The ``mailman members`` command no longer throws AttributeError when listing
