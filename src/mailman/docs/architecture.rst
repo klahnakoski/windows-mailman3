@@ -80,6 +80,47 @@ configuration options, the master will start the appropriate runners as
 subprocesses, and it will watch for the clean exiting of these subprocesses
 when ``mailman stop`` is called.
 
+Errors and shunting
+-------------------
+
+During message processing by the queue runners, unexpected exceptions may
+occur. When this happens, Mailman moves the message to the *shunt* queue
+instead of discarding it. This prevents a defective message or internal
+error from interrupting the processing of other messages in the system.
+
+Messages may be shunted for several reasons. A common case is a message
+that does not conform to email standards and cannot be parsed correctly.
+Other causes may include bugs in the code, configuration errors, or
+filesystem permission problems that cause handlers to raise exceptions.
+
+Shunting differs from other outcomes such as *discard*, *reject*, or
+*hold*. Those actions are deliberate policy decisions taken during the
+moderation phase according to configured rules. Shunting occurs only
+when an unexpected error interrupts normal message processing.
+
+Messages in the shunt queue can later be inspected or returned to their
+original queue by a system administrator using the ``mailman unshunt``
+command. Some errors cannot be recovered by unshunting; such messages
+are moved to the *bad* queue and cannot be automatically unshunted.
+
+The ``mailman unshunt`` command is expected to succeed once the underlying
+issue that caused the exception has been resolved. Messages in the shunt
+queue will not be processed further without administrator intervention.
+
+Messages in the *bad* queue are typically those that have been retried
+multiple times (usually three attempts) and still fail. These messages
+also require administrator intervention and cannot be automatically
+unshunted.
+
+In some cases, it is possible to manually retry messages from the *bad*
+queue by renaming the queue file from ``.psv`` to ``.pck``, moving it to
+the shunt queue, and then using ``mailman unshunt``. However, this will
+generally fail unless the underlying problem (for example, a configuration
+error) has been corrected.
+
+Queue files can be inspected using the ``mailman qfile`` command, for
+example: ``mailman qfile /path/to/file.pck``. This command does not depend
+on the file extension and can also be used on files in the bad queue.
 
 Rules and chains
 ================
