@@ -94,6 +94,8 @@ New Features
 
 Other
 -----
+* Updated Python version references in contributing documentation from
+  py39/py311 to py313/py312.  (:issue:`1076`)
 * The subject of uncaught bounce notifications include a list's display name.
   (:issue:`1194`)
 * Documented that the ``mailman remove`` command doesn't remove archives.
