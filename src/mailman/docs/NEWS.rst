@@ -70,6 +70,9 @@ Bugs fixed
   versus at the list level. (:issue:`705`)
 * Allow configuration of LMTP message size limit via the variable
   ``lmtp_max_size`` in config section ``mta``.
+* Do not call non-reentrant functions in the signal handler. (:issue:`1258`)
+* Stop runner process gracefully not to shunt a processing message.
+  (:issue:`1273`)
 
 New Features
 ------------

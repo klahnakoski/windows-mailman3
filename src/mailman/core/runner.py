@@ -17,7 +17,7 @@
 
 """The process runner base class."""
 
-import time
+import queue
 import signal
 import logging
 import traceback
@@ -31,11 +31,7 @@ from mailman.core.logging import reopen
 from mailman.core.switchboard import Switchboard
 from mailman.interfaces.languages import ILanguageManager
 from mailman.interfaces.listmanager import IListManager
-from mailman.interfaces.runner import (
-    IRunner,
-    RunnerCrashEvent,
-    RunnerInterrupt,
-)
+from mailman.interfaces.runner import IRunner, RunnerCrashEvent
 from mailman.utilities.string import expand
 from public import public
 from zope.component import getUtility
@@ -77,44 +73,47 @@ class Runner:
             self.queue_directory = None
             self.switchboard = None
         self.sleep_time = as_timedelta(section.sleep_time)
-        # sleep_time is a timedelta; turn it into a float for time.sleep().
+        # sleep_time is a timedelta; turn it into a float for sleep.
         self.sleep_float = (86400 * self.sleep_time.days +
                             self.sleep_time.seconds +
                             self.sleep_time.microseconds / 1.0e6)
         self.max_restarts = int(section.max_restarts)
         self.start = as_boolean(section.start)
+        self._signal_queue = queue.SimpleQueue()
         self._stop = False
         self.status = 0
 
     def __repr__(self):
         return '<{} at {:#x}>'.format(self.__class__.__name__, id(self))
 
-    def signal_handler(self, signum, frame):        # pragma: nocover
-        signame = {
-            signal.SIGTERM: 'SIGTERM',
-            signal.SIGINT: 'SIGINT',
-            signal.SIGUSR1: 'SIGUSR1',
-            }.get(signum, signum)
+    def signal_handler(self, signum, frame):
+        # Only use reentrant-safe operations here.
+        # queue.SimpleQueue.put() is reentrant-safe.
+        # logging is NOT reentrant-safe:
+        # https://docs.python.org/3/library/logging.html#thread-safety
+        self._signal_queue.put(signum)
+
+    def _process_signal(self, signum):
+        signame = signal.Signals(signum).name
         if signum == signal.SIGHUP:
+            rlog.info(
+                '%s runner caught %s.  Reopening logs.',
+                self.name, signame
+            )
             reopen()
-            rlog.info('{} runner caught SIGHUP.  Reopening logs.'.format(
-                self.name))
         elif signum in (signal.SIGTERM, signal.SIGINT, signal.SIGUSR1):
+            rlog.info('%s runner caught %s.  Stopping.', self.name, signame)
             self.stop()
             self.status = signum
-            rlog.info('{} runner caught {}.  Stopping.'.format(
-                self.name, signame))
-            # As of Python 3.5, PEP 475 gets in our way.  Runners with long
-            # time.sleep()'s in their _snooze() method (e.g. the retry runner)
-            # will have their system call implemented time.sleep()
-            # automatically retried at the C layer.  The only reliable way to
-            # prevent this is to raise an exception in the signal handler.  The
-            # standard run() method automatically suppresses this exception,
-            # meaning, it's caught and ignored, but effectively breaks the
-            # run() loop, which is just what we want.  Runners which implement
-            # their own run() method must be prepared to catch
-            # RunnerInterrupts, usually also ignoring them.
-            raise RunnerInterrupt
+
+    def _process_signals(self):
+        """Process pending signals recorded by the signal handler."""
+        while True:
+            try:
+                signum = self._signal_queue.get_nowait()
+            except queue.Empty:
+                break
+            self._process_signal(signum)
 
     def set_signals(self):
         """See `IRunner`."""
@@ -130,20 +129,20 @@ class Runner:
     def run(self):
         """See `IRunner`."""
         # Start the main loop for this runner.
-        with suppress(KeyboardInterrupt, RunnerInterrupt):
+        with suppress(KeyboardInterrupt):
             while True:
                 # Once through the loop that processes all the files in the
                 # queue directory.
                 filecnt = self._one_iteration()
-                # Do the periodic work for the subclass.
-                self._do_periodic()
-                # If the stop flag is set, we're done.
+                self._process_signals()
                 if self._stop:
                     break
                 # Give the runner an opportunity to snooze for a while, but
                 # pass it the file count so it can decide whether to do more
                 # work now or not.
                 self._snooze(filecnt)
+                if self._stop:
+                    break
         self._clean_up()
 
     def _one_iteration(self):
@@ -151,10 +150,11 @@ class Runner:
         dlog.debug('Starting oneloop')
         # List all the files in our queue directory.  The switchboard is
         # guaranteed to hand us the files in FIFO order.
-        if self.switchboard is None:
-            files = []
-        else:
-            files = self.switchboard.files
+        if self.switchboard is None or not (files := self.switchboard.files):
+            # Ensure to do the periodic work for the subclass.
+            self._do_periodic()
+            dlog.debug('Ending oneloop: 0')
+            return 0
         for filebase in files:
             dlog.debug('Processing filebase: %s', filebase)
             try:
@@ -294,12 +294,22 @@ class Runner:
         """See `IRunner`."""
         pass
 
+    def _sleep(self, timeout=None):
+        if timeout is None:
+            timeout = self.sleep_float
+        try:
+            signum = self._signal_queue.get(timeout=timeout)
+            self._process_signal(signum)
+        except queue.Empty:  # pragma: nocover
+            pass
+
     def _snooze(self, filecnt):
         """See `IRunner`."""
         if filecnt or self.sleep_float <= 0:
             return
-        time.sleep(self.sleep_float)
+        self._sleep()
 
     def _short_circuit(self):
         """See `IRunner`."""
+        self._process_signals()
         return self._stop

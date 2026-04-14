@@ -17,8 +17,6 @@
 
 """Retry delivery."""
 
-import time
-
 from mailman.config import config
 from mailman.core.runner import Runner
 from public import public
@@ -35,4 +33,4 @@ class RetryRunner(Runner):
 
     def _snooze(self, filecnt):
         # We always want to snooze.
-        time.sleep(self.sleep_float)
+        self._sleep()  # pragma: nocover
