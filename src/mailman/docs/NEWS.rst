@@ -73,6 +73,8 @@ Bugs fixed
 * Do not call non-reentrant functions in the signal handler. (:issue:`1258`)
 * Stop runner process gracefully not to shunt a processing message.
   (:issue:`1273`)
+* The replybot handler ignores messages without a valid sender address instead
+  of shunting them.  (:issue:`509`, :issue:`525`)
 
 New Features
 ------------
