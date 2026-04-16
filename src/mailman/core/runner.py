@@ -297,6 +297,9 @@ class Runner:
     def _sleep(self, timeout=None):
         if timeout is None:
             timeout = self.sleep_float
+        elif timeout == 0:
+            # Wait for a signal forever.
+            timeout = None
         try:
             signum = self._signal_queue.get(timeout=timeout)
             self._process_signal(signum)

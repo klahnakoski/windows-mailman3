@@ -228,7 +228,7 @@ class TestRunnerSignal(unittest.TestCase):
 
             def _sleep(self_inner, timeout=None):
                 sleeping_started.set()
-                super()._sleep(timeout)
+                super()._sleep(0)
                 sleeping_completed.set()
                 return 0
 
