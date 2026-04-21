@@ -46,7 +46,7 @@ class TestAvoidDuplicates(unittest.TestCase):
         self._bart.preferences.receive_list_copy = False
 
     def test_delete_from_cc_and_recips(self):
-        # CC to member with receive_list_copy = False is dropped and member
+        # Cc to member with receive_list_copy = False is dropped and member
         # is dropped from recipients.
         msg = mfs("""\
 From: anne@example.com

@@ -62,8 +62,8 @@ Suppressing the list copy
 Members can elect not to receive a list copy of any message on which they are
 explicitly named as a recipient.  This is done by setting their
 ``receive_list_copy`` preference to ``False``.  However, if they aren't
-mentioned in one of the recipient headers (i.e. ``To``, ``CC``, ``Resent-To``,
-or ``Resent-CC``), then they will get a list copy.
+mentioned in one of the recipient headers (i.e. ``To``, ``Cc``, ``Resent-To``,
+or ``Resent-Cc``), then they will get a list copy.
 
     >>> member_a.preferences.receive_list_copy = False
     >>> msg = message_from_string("""\
@@ -81,12 +81,12 @@ or ``Resent-CC``), then they will get a list copy.
     Something of great import.
     <BLANKLINE>
 
-If they're mentioned on the ``CC`` line, they won't get a list copy and will
-be removed from the ``CC``.
+If they're mentioned on the ``Cc`` line, they won't get a list copy and will
+be removed from the ``Cc``.
 
     >>> msg = message_from_string("""\
     ... From: Claire Person <cperson@example.com>
-    ... CC: aperson@example.com
+    ... Cc: aperson@example.com
     ...
     ... Something of great import.
     ... """)
@@ -100,12 +100,12 @@ be removed from the ``CC``.
     Something of great import.
     <BLANKLINE>
 
-But if they're mentioned on the ``CC`` line and have ``receive_list_copy`` set
+But if they're mentioned on the ``Cc`` line and have ``receive_list_copy`` set
 to ``True`` (the default), then they still get a list copy.
 
     >>> msg = message_from_string("""\
     ... From: Claire Person <cperson@example.com>
-    ... CC: bperson@example.com
+    ... Cc: bperson@example.com
     ...
     ... Something of great import.
     ... """)
@@ -115,7 +115,7 @@ to ``True`` (the default), then they still get a list copy.
     ['aperson@example.com', 'bperson@example.com']
     >>> print(msg.as_string())
     From: Claire Person <cperson@example.com>
-    CC: bperson@example.com
+    Cc: bperson@example.com
     <BLANKLINE>
     Something of great import.
     <BLANKLINE>
@@ -158,7 +158,7 @@ Other headers checked for recipients include the ``To``...
     Something of great import.
     <BLANKLINE>
 
-...and ``Resent-CC`` headers.
+...and ``Resent-Cc`` headers.
 
     >>> msg = message_from_string("""\
     ... From: Claire Person <cperson@example.com>
