@@ -309,7 +309,8 @@ class LMTPRunner(Runner):
         """See `IRunner`."""
         self.lmtp.start()
         while True:
-            self._snooze(0)
+            # Wait for a signal forever.
+            self._sleep(0)
             if self._stop:
                 break
         self.lmtp.stop()
