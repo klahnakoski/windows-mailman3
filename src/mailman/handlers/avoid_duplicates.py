@@ -57,7 +57,7 @@ class AvoidDuplicates:
         cc_addresses = {}
         for header in ('to', 'cc', 'resent-to', 'resent-cc'):
             header_addresses = {
-                addr: formataddr((name, addr))
+                addr: name
                 for name, addr in msg.get_addresses(header, [])
                 if addr
             }
@@ -105,4 +105,7 @@ class AvoidDuplicates:
         # RFC 2822 specifies zero or one Cc header
         del msg['cc']
         if cc_addresses:
-            msg['Cc'] = COMMASPACE.join(cc_addresses.values())
+            msg['Cc'] = COMMASPACE.join(
+                formataddr((name, addr))
+                for addr, name in cc_addresses.items()
+            )
