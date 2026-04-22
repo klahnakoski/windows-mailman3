@@ -51,6 +51,8 @@ Bugs fixed
   message.  (:issue:`514`)
 * The ``mailman import21`` command does not add duplicate entry to
   the ``*_these_nonmembers`` lists. (:issue:`1213`)
+* The ``mailman import21`` rounds down timedelta to 999999 days when
+  ``OverflowError``. (:issue:`1275`)
 * Unfold address containing headers before parsing in implicit_dest.
   (:issue:`1229`)
 * User-facing ``UserNotification`` messages now use the list owner address in

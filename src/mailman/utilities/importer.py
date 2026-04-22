@@ -88,11 +88,19 @@ def str_to_bytes(value):
 
 
 def seconds_to_delta(value):
-    return datetime.timedelta(seconds=value)
+    try:
+        d = datetime.timedelta(seconds=value)
+    except OverflowError:  # pragma: nocover
+        d = datetime.timedelta(days=999999)
+    return d
 
 
 def days_to_delta(value):
-    return datetime.timedelta(days=value)
+    try:
+        d = datetime.timedelta(days=value)
+    except OverflowError:  # pragma: nocover
+        d = datetime.timedelta(days=999999)
+    return d
 
 
 def list_members_to_unicode(value):
