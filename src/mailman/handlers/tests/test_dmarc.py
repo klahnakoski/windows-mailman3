@@ -25,7 +25,10 @@ from mailman.handlers import dmarc
 from mailman.interfaces.mailinglist import DMARCMitigateAction, ReplyToMunging
 from mailman.interfaces.member import MemberRole
 from mailman.interfaces.subscriptions import RequestRecord
-from mailman.testing.helpers import specialized_message_from_string as mfs
+from mailman.testing.helpers import (
+    configuration,
+    specialized_message_from_string as mfs,
+)
 from mailman.testing.layers import ConfigLayer
 
 
@@ -527,3 +530,15 @@ Content-Transfer-Encoding: 7bit
 <html><head></head><body>Some things to say.</body></html>
 --=====abc==--
 """)
+
+    @configuration('mailman', mitigate_owner_mail='no')
+    def test_unconditional_mitigation_respects_global_owner_setting(self):
+        # Set the list to mitigate unconditionally
+        self._mlist.dmarc_mitigate_unconditionally = True
+        # Craft a perfectly clean, fresh message from the raw string
+        msg = mfs(self._text)
+        msgdata = {'to_owner': True}
+        # Process the message
+        dmarc.process(self._mlist, msg, msgdata)
+        # message not munged.
+        self.assertMultiLineEqual(msg.as_string(), self._text)
