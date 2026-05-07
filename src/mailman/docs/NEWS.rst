@@ -77,6 +77,8 @@ Bugs fixed
   (:issue:`1273`)
 * The replybot handler ignores messages without a valid sender address instead
   of shunting them.  (:issue:`509`, :issue:`525`)
+* The global ``mitigate_owner_mail`` setting is now properly respected even if
+  a list is set to mitigate DMARC unconditionally. (:issue:`1277`)
 
 New Features
 ------------
