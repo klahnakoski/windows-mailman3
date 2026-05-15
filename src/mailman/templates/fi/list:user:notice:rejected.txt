@@ -1,0 +1,11 @@
+Viestisi $listname -postituslistalle torjuttiin seuraavista syistä johtuen
+
+
+
+
+
+$reasons
+
+
+
+Alkuperäinen viesti, sellaisena kuin Mailman sen sai, on liitteenä.

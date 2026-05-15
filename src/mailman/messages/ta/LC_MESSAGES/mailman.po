@@ -2657,7 +2657,7 @@ msgid "list:admin:notice:unsubscribe.txt"
 msgstr "$ உறுப்பினர் $ display_name இலிருந்து அகற்றப்பட்டார்."
 
 msgid "list:member:digest:header.txt"
-msgstr "list:member:digest:header.txt"
+msgstr ""
 
 msgid "list:member:digest:masthead.txt"
 msgstr ""
@@ -2681,7 +2681,7 @@ msgstr ""
 " குழுவிலகுவதற்கு $ {short_listname} -leave@$ {domain} க்கு ஒரு மின்னஞ்சலை அனுப்பவும்"
 
 msgid "list:member:regular:header.txt"
-msgstr "list:member:regular:header.txt"
+msgstr ""
 
 msgid "list:user:action:invite.txt"
 msgstr ""
@@ -2756,7 +2756,7 @@ msgstr ""
 " $ உரிமையாளர்_மெயில்"
 
 msgid "list:user:notice:goodbye.txt"
-msgstr "list:user:notice:goodbye.txt"
+msgstr ""
 
 msgid "list:user:notice:hold.txt"
 msgstr ""

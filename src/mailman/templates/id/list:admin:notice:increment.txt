@@ -1,0 +1,3 @@
+Skor bounce $member pada $listname telah ditingkatkan.
+
+DSN pemicu, jika tersedia, dilampirkan.

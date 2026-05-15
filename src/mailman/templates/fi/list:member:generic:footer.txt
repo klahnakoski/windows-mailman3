@@ -1,0 +1,3 @@
+_______________________________________________
+$display_name postituslista -- $listname
+Listalta voi poistua lähettämällä sähköpostia osoitteeseen ${short_listname}-leave@${domain}

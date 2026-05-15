@@ -1,0 +1,4 @@
+Langganan $member telah dinonaktifkan pada $listname karena skor bounce mereka
+melebihi bounce_score_threshold milik milis.
+
+DSN pemicu, jika tersedia, dilampirkan.
