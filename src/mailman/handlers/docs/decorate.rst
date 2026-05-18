@@ -192,7 +192,7 @@ set, Mailman will still try to concatenate the header and footer, but it will
 convert the text to utf-8 and base-64 encode the message payload.
 ::
 
-    # 'ja' = Japanese; charset = 'euc-jp'
+    # 'ja' = Japanese; charset = 'UTF-8'
     >>> mlist.preferred_language = 'ja'
 
     >>> with open(myheader_path, 'w') as fp:
