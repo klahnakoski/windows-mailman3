@@ -84,7 +84,10 @@ def bounce_message(mlist, msg, error=None):
     # BAW: Be sure you set the type before trying to attach, or you'll get
     # a MultipartConversionError.
     bmsg.set_type('multipart/mixed')
-    txt = MIMEText(notice, _charset=mlist.preferred_language.charset)
+    try:
+        txt = MIMEText(notice, _charset=mlist.preferred_language.charset)
+    except UnicodeError:
+        txt = MIMEText(notice, _charset='utf-8')
     bmsg.attach(txt)
     bmsg.attach(MIMEMessage(msg))
     bmsg.send(mlist)

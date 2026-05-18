@@ -19,13 +19,17 @@
 
 import unittest
 
+from mailman.app.bounces import bounce_message
 from mailman.app.lifecycle import create_list
 from mailman.core.chains import process as process_chain
+from mailman.interfaces.languages import ILanguageManager
+from mailman.interfaces.pipeline import RejectMessage
 from mailman.testing.helpers import (
     get_queue_messages,
     specialized_message_from_string as mfs,
 )
 from mailman.testing.layers import ConfigLayer
+from zope.component import getUtility
 
 
 class TestReject(unittest.TestCase):
@@ -55,6 +59,21 @@ Subject: Ignore
         self.assertIn('TEST-REASON-1', payload)
         self.assertIn('TEST-REASON-2', payload)
         self.assertIn('TEST-FORMAT-REASON-3', payload)
+
+    def test_bounce_message_bad_charset(self):
+        # Force the list to use us-ascii charset to trigger UnicodeError
+        language_manager = getUtility(ILanguageManager)
+        en_language = language_manager.get('en')
+        self._mlist.preferred_language = en_language
+        error = RejectMessage('Non-ascii text é.')
+        bounce_message(self._mlist, self._msg, error)
+        items = get_queue_messages('virgin', expected_count=1)
+        notice = items[0].msg.get_payload(0)
+        self.assertEqual(
+            notice.get_payload(decode=True).decode(),
+            'Non-ascii text é.'
+        )
+        self.assertEqual(notice.get_content_charset(), 'utf-8')
 
     def test_no_reason(self):
         # There may be no moderation reasons.
