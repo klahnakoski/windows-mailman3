@@ -79,6 +79,8 @@ Bugs fixed
   of shunting them.  (:issue:`509`, :issue:`525`)
 * The global ``mitigate_owner_mail`` setting is now properly respected even if
   a list is set to mitigate DMARC unconditionally. (:issue:`1277`)
+* Reject notices with non-ASCII text on ``us-ascii`` lists now fall back to
+  UTF-8 instead of causing messages to be shunted.  (:issue:`1268`)
 
 New Features
 ------------
