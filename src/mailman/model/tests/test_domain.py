@@ -151,6 +151,9 @@ class TestDomainManager(unittest.TestCase):
         self.assertEqual(len(domain.owners), 1)
         self.assertEqual(domain.owners[0].addresses[0].email,
                          'anne@example.org')
+        self.assertEqual(
+            [owned.mail_host for owned in domain.owners[0].domains],
+            ['example.org'])
 
     def test_add_multiple_domain_owners(self):
         # Multiple domain owners can be added after the domain is created.

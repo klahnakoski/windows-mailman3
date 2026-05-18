@@ -25,6 +25,7 @@ from mailman.interfaces.member import DeliveryMode, DeliveryStatus
 from mailman.interfaces.preferences import IPreferences
 from public import public
 from sqlalchemy import Boolean, Column, Integer
+from sqlalchemy.orm import relationship
 from zope.component import getUtility
 from zope.interface import implementer
 
@@ -44,6 +45,9 @@ class Preferences(Model):
     receive_own_postings = Column(Boolean)
     delivery_mode = Column(Enum(DeliveryMode))
     delivery_status = Column(Enum(DeliveryStatus))
+    user = relationship('User', back_populates='preferences', uselist=False)
+    address = relationship(
+        'Address', back_populates='preferences', uselist=False)
 
     def __repr__(self):
         return '<Preferences object at {:#x}>'.format(id(self))

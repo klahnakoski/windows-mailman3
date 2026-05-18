@@ -399,6 +399,9 @@ nothing to repeat at position 1"""
         self._import()
         alias_set = IAcceptableAliasSet(self._mlist)
         self.assertEqual(sorted(alias_set.aliases), new_aliases)
+        self.assertEqual(sorted(alias.alias
+                                for alias in self._mlist.acceptable_aliases),
+                         new_aliases)
 
     def test_acceptable_aliases_invalid(self):
         # Values without an '@' sign used to be matched against the local

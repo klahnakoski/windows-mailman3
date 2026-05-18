@@ -260,6 +260,9 @@ class TestAcceptableAliases(unittest.TestCase):
             alias_set = IAcceptableAliasSet(self._mlist)
             alias_set.add('bee@example.com')
         self.assertEqual(['bee@example.com'], list(alias_set.aliases))
+        self.assertEqual(len(self._mlist.acceptable_aliases), 1)
+        self.assertIs(self._mlist.acceptable_aliases[0].mailing_list,
+                      self._mlist)
         getUtility(IListManager).delete(self._mlist)
         self.assertEqual(len(list(alias_set.aliases)), 0)
 
@@ -275,6 +278,7 @@ class TestHeaderMatch(unittest.TestCase):
         header_matches.append('Header', 'pattern')
         self.assertEqual(len(self._mlist.header_matches), 1)
         self.assertEqual(self._mlist.header_matches[0].header, 'header')
+        self.assertIs(self._mlist.header_matches[0].mailing_list, self._mlist)
 
     def test_optional_args_default_to_none(self):
         # At the time of writing this, there are two optional fields, tag and

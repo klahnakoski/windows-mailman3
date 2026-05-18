@@ -295,6 +295,7 @@ DATETIME_COLUMNS = [
     ]
 
 EXCLUDES = set((
+    'acceptable_aliases',
     'accept_these_nonmembers',
     'delivery_status',
     'digest_members',
@@ -339,11 +340,13 @@ def import_config_pck(mlist, config_dict):
             converter = TYPES.get(key)
             if converter is None:
                 column = getattr(mlist.__class__, key, None)
-                if column is not None and isinstance(column.type, Boolean):
+                column_type = getattr(column, 'type', None)
+                if (column_type is not None
+                        and isinstance(column_type, Boolean)):
                     converter = bool
-                if column is not None \
-                        and (isinstance(column.type, SAUnicode)
-                             or isinstance(column.type, SAUnicode4Byte)):
+                if (column_type is not None
+                        and (isinstance(column_type, SAUnicode)
+                             or isinstance(column_type, SAUnicode4Byte))):
                     converter = maybe_truncate_mysql
             try:
                 if converter is not None:

@@ -53,13 +53,12 @@ class Domain(Model):
     description = Column(SAUnicode4Byte)
     owners = relationship('User',
                           secondary='domain_owner',
-                          backref='domains')
+                          back_populates='domains')
     alias_domain = Column(SAUnicode)
     base_url = Column(SAUnicode)
 
     def __init__(self, mail_host,
                  description=None,
-                 owners=None,
                  alias_domain=None,
                  base_url=None):
         """Create and register a domain.
@@ -68,15 +67,11 @@ class Domain(Model):
         :type mail_host: string
         :param description: An optional description of the domain.
         :type description: string
-        :param owners: Optional owners of this domain.
-        :type owners: sequence of `IUser` or string emails.
         :param alias_domain: Alternate domain for Postfix
         :type alias_domain: string
         """
         self.mail_host = mail_host
         self.description = description
-        if owners is not None:
-            self.add_owners(owners)
         self.alias_domain = alias_domain
         self.base_url = base_url
 
@@ -146,8 +141,10 @@ class DomainManager:
             raise BadDomainSpecificationError(
                 'Duplicate email host: {}'.format(mail_host))
         notify(DomainCreatingEvent(mail_host))
-        domain = Domain(mail_host, description, owners, alias_domain, base_url)
+        domain = Domain(mail_host, description, alias_domain, base_url)
         store.add(domain)
+        if owners is not None:
+            domain.add_owners(owners)
         notify(DomainCreatedEvent(domain))
         return domain
 

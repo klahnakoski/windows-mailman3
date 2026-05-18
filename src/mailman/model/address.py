@@ -28,7 +28,7 @@ from mailman.interfaces.address import (
 from mailman.utilities.datetime import now
 from public import public
 from sqlalchemy import Column, DateTime, ForeignKey, Integer
-from sqlalchemy.orm import backref, relationship
+from sqlalchemy.orm import relationship
 from zope.component import getUtility
 from zope.event import notify
 from zope.interface import implementer
@@ -49,10 +49,12 @@ class Address(Model):
     registered_on = Column(DateTime)
 
     user_id = Column(Integer, ForeignKey('user.id'), index=True)
+    user = relationship(
+        'User', back_populates='addresses', foreign_keys=[user_id])
 
     preferences_id = Column(Integer, ForeignKey('preferences.id'), index=True)
     preferences = relationship(
-        'Preferences', backref=backref('address', uselist=False))
+        'Preferences', back_populates='address')
 
     def __init__(self, email, display_name):
         super().__init__()
