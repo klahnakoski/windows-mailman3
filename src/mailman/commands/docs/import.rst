@@ -26,9 +26,10 @@ You must also specify a pickle file to import.
 
 Too bad the list doesn't exist.
 
-    >>> from mailman.utilities.filesystem import File, open
-    >>> pickle_file = File('mailman.testing', 'config.pck')
-    >>> command('mailman import21 import@example.com ' + str(pickle_file))
+    >>> from importlib.resources import path
+    >>> with path('mailman.testing', 'config.pck') as pickle_path:
+    ...     pickle_file = str(pickle_path)
+    ...     command('mailman import21 import@example.com ' + pickle_file)
     Usage: ... [OPTIONS] LISTSPEC PICKLE_FILE
     Try 'import21 --help' for help.
     <BLANKLINE>
@@ -43,7 +44,7 @@ from.
     >>> from mailman.config import config
     >>> transaction = config.db    
     >>> transaction.commit()
-    >>> command('mailman import21 import@example.com ' + str(File(__file__)))
+    >>> command('mailman import21 import@example.com ' + __file__)
     Usage: ... [OPTIONS] LISTSPEC PICKLE_FILE
     Try 'import21 --help' for help.
     <BLANKLINE>

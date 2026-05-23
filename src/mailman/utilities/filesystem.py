@@ -171,7 +171,9 @@ class File:
 
     def __init__(self, *parts, **kwargs):
         # Normalise separators to forward slash.
-        path = os.path.join(*[str(p) for p in parts])
+        # If the first part looks like a dotted Python package name (has a
+        parts = [str(p) for p in parts]
+        path = os.path.join(*parts)
         # On Windows, file URI paths and url2pathname() output can arrive as
         # '/C:/...' or '\C:\...' (leading slash/backslash before drive letter).
         # Strip the leading separator so os.path.abspath() doesn't mangle it.
