@@ -33,7 +33,7 @@ By putting a Python function somewhere on your ``sys.path``, you can have
     >>> from mailman.utilities.filesystem import File, open
     >>> import os, sys
     >>> old_path = sys.path[:]
-    >>> sys.path.insert(0, config.VAR_DIR)
+    >>> sys.path.insert(0, str(config.VAR_DIR))
 
 .. cleanup
     >>> ignore = cleanups.callback(setattr, sys, 'path', old_path)
