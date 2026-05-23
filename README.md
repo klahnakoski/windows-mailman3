@@ -29,9 +29,11 @@ python -m venv .venv
 Run all tests:
 
 ```commandline
-
+tox.exe -e py312-nocov
 ```
+
 Run specific test module:
 
-```-- -v mailman.commands.tests
+```
+tox.exe -e py312-nocov -- -v mailman.commands.tests
 ```
