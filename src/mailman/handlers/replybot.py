@@ -84,6 +84,9 @@ class Replybot:
         # Now see if we're in the grace period for this sender.  grace_period
         # = 0 means always automatically respond, as does an "X-Ack: yes"
         # header (useful for debugging).
+        # If the message has no valid sender address, we can't autorespond.
+        if not msg.sender:
+            return
         response_set = IAutoResponseSet(mlist)
         user_manager = getUtility(IUserManager)
         address = user_manager.get_address(msg.sender)

@@ -28,14 +28,14 @@ from public import public
 # ---------------------------------------------------------------------------
 # Characters that are invalid in filenames on Windows.
 # ---------------------------------------------------------------------------
-_WINDOWS_UNSAFE_CHARS = ':*?"<>|'
+WINDOWS_UNSAFE_CHARS = ':*?"<>|'
 
 # drop in replacement for builtins.open
 def open(path, mode="r", **kwargs):
     return File(path).open(mode, **kwargs)
 
 
-def _sanitize_filename(name):
+def sanitize_filename(name):
     """Sanitize a bare filename (no directory separators) for the platform.
 
     On Windows, characters invalid in filenames (``:``, ``*``, etc.) are
@@ -49,12 +49,12 @@ def _sanitize_filename(name):
     """
     if sys.platform != "win32":
         return name
-    for ch in _WINDOWS_UNSAFE_CHARS:
+    for ch in WINDOWS_UNSAFE_CHARS:
         name = name.replace(ch, "_")
     return name
 
 
-def _sanitize_path(path):
+def sanitize_path(path):
     """Sanitize a filesystem path for the current platform.
 
     On Windows, characters like colons are replaced with underscores
@@ -74,12 +74,12 @@ def _sanitize_path(path):
         path = path[1:]
     # Preserve drive letter (e.g. C:\)
     drive, tail = os.path.splitdrive(path)
-    for ch in _WINDOWS_UNSAFE_CHARS:
+    for ch in WINDOWS_UNSAFE_CHARS:
         tail = tail.replace(ch, "_")
     return drive + tail
 
 
-class _umask:
+class Umask:
     """Manage the umask for the with statement."""
 
     def __init__(self, umask):
@@ -232,7 +232,7 @@ class File:
     @property
     def os_path(self):
         """OS-native absolute path string."""
-        return _sanitize_path(os.path.abspath(self._path))
+        return sanitize_path(os.path.abspath(self._path))
 
     @property
     def parent(self):
@@ -276,17 +276,17 @@ class File:
     @property
     def exists(self):
         """True if the path exists on disk."""
-        return os.path.exists(_sanitize_path(self._path))
+        return os.path.exists(sanitize_path(self._path))
 
     @property
     def is_dir(self):
         """True if the path is a directory."""
-        return os.path.isdir(_sanitize_path(self._path))
+        return os.path.isdir(sanitize_path(self._path))
 
     @property
     def is_file(self):
         """True if the path is a regular file."""
-        return os.path.isfile(_sanitize_path(self._path))
+        return os.path.isfile(sanitize_path(self._path))
 
     # ------------------------------------------------------------------
     # File operations
@@ -329,11 +329,11 @@ class File:
             yield File(entry.path)
 
     def listdir(self):
-        return [entry.path for entry in os.scandir(self.os_path)]
+        return [entry.name for entry in os.scandir(self.os_path)]
 
     def makedirs(self, mode=0o0755):
         """Create this directory and all missing parents."""
-        with _umask(0):
+        with Umask(0):
             try:
                 os.makedirs(self.os_path, mode, exist_ok=True)
             except FileExistsError:
@@ -367,4 +367,4 @@ class File:
         On Windows replaces characters invalid in filenames (``:``, ``*``,
         etc.) with underscores.  On other platforms returns *name* unchanged.
         """
-        return _sanitize_filename(name)
+        return sanitize_filename(name)

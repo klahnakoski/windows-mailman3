@@ -4,24 +4,31 @@
 The IntelliJ Copilot terminal tool does **not** reliably capture stdout/stderr.
 Always use the `run_tests.py` wrapper which writes output to a file:
 ```
-.\.venv\Scripts\python.exe run_tests.py test_output.txt [nose2 args...]
+.\.tox\py312-nocov\Scripts\python.exe run_tests.py test_output.txt [nose2 args...]
 ```
 Then read `test_output.txt` to see results.
+
+> **IMPORTANT**: Use `.\.tox\py312-nocov\Scripts\python.exe`, **not** `.\.venv\Scripts\python.exe`.
+> The `.venv` environment does **not** have `mailman` installed and will fail with
+> `ModuleNotFoundError: No module named 'mailman'`.
+> The tox venv (`.tox\py312-nocov\`) is the one that has all dependencies installed.
+> Run `tox -e py312-nocov` at least once first to create it.
+
 ### Run a single test
 ```
-.\.venv\Scripts\python.exe run_tests.py test_output.txt -v mailman.app.tests.test_bounces.TestSendProbeNonEnglish.test_probe_notice_with_member_nonenglish
+.\.tox\py312-nocov\Scripts\python.exe run_tests.py test_output.txt -v mailman.app.tests.test_bounces.TestSendProbeNonEnglish.test_probe_notice_with_member_nonenglish
 ```
 ### Run a single test module
 ```
-.\.venv\Scripts\python.exe run_tests.py test_output.txt -v mailman.utilities.lazr.config.tests.test_config
+.\.tox\py312-nocov\Scripts\python.exe run_tests.py test_output.txt -v mailman.utilities.lazr.config.tests.test_config
 ```
 ### Run a test class
 ```
-.\.venv\Scripts\python.exe run_tests.py test_output.txt -v mailman.chains.tests.test_base.TestMiscellaneous
+.\.tox\py312-nocov\Scripts\python.exe run_tests.py test_output.txt -v mailman.chains.tests.test_base.TestMiscellaneous
 ```
 ### Run all tests (fail-fast)
 ```
-.\.venv\Scripts\python.exe run_tests.py test_output.txt -v -F
+.\.tox\py312-nocov\Scripts\python.exe run_tests.py test_output.txt -v -F
 ```
 ### Using tox (full suite, creates its own venv)
 ```
@@ -89,6 +96,17 @@ RST doctests execute in a **single shared namespace** from top to bottom.
 - Import each name **once only** -- redundant re-imports in later sections must be removed.
 - Use `from mailman.utilities.filesystem import open` (not `File`) unless `File` itself is
   referenced somewhere in that file.
+### Visibility: `@public` vs private
+- Use the **`@public` decorator** (from the `public` package) to mark names that are part of the
+  public API.  This is how upstream mailman declares its public interface.
+- **Do not use leading-underscore names** (`_foo`, `__bar`) to signal private scope —
+  prefer module-level helpers without a leading underscore, and rely on `@public` to
+  explicitly opt names *in* to the public API rather than relying on naming conventions
+  to opt them *out*.
+- Exception: internal helper functions/variables that are only used within a single
+  module and have no prospect of being exported may keep a leading underscore to avoid
+  polluting `from module import *` — but prefer clear module structure over name
+  mangling where possible.
 ### General style (flake8)
 - Max line length **79 characters** (`max-line-length = 79` in `[flake8]`)
 - `src/mailman/compat/*.py` is excluded from flake8
