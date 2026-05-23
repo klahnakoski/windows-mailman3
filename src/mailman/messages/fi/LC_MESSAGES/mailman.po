@@ -8,16 +8,15 @@ msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
 "Report-Msgid-Bugs-To: \n"
 "POT-Creation-Date: 2025-07-05 07:50-0700\n"
-"PO-Revision-Date: 2026-03-28 14:11+0000\n"
-"Last-Translator: John Doe <vvi08@temp-mail.me>\n"
-"Language-Team: Finnish <https://hosted.weblate.org/projects/gnu-mailman/"
-"mailman/fi/>\n"
+"PO-Revision-Date: 2022-03-23 03:39+0000\n"
+"Last-Translator: Anonymous <noreply@weblate.org>\n"
+"Language-Team: Finnish <https://hosted.weblate.org/projects/gnu-mailman/mailman/fi/>\n"
 "Language: fi\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=2; plural=n != 1;\n"
-"X-Generator: Weblate 5.17-dev\n"
+"X-Generator: Weblate 4.12-dev\n"
 
 #: src/mailman/app/bounces.py:76 src/mailman/app/moderator.py:83
 #: src/mailman/chains/hold.py:166 src/mailman/handlers/acknowledge.py:56
@@ -59,7 +58,7 @@ msgstr ""
 #: src/mailman/app/moderator.py:132 src/mailman/app/moderator.py:278
 #: src/mailman/rest/sub_moderation.py:119
 msgid "[No reason given]"
-msgstr "[Syytä ei annettu]"
+msgstr ""
 
 #: src/mailman/app/moderator.py:185
 msgid "Forward of moderated message"
@@ -322,7 +321,7 @@ msgstr ""
 
 #: src/mailman/chains/accept.py:39
 msgid "Accept a message."
-msgstr "Hyväksy viesti."
+msgstr ""
 
 #: src/mailman/chains/builtin.py:38
 msgid "The built-in moderation chain."
@@ -346,7 +345,7 @@ msgstr ""
 
 #: src/mailman/chains/hold.py:59
 msgid "N/A"
-msgstr "Tyhjä / ei mitään"
+msgstr ""
 
 #: src/mailman/chains/hold.py:118
 msgid "Last autoresponse notification for today"
@@ -443,7 +442,7 @@ msgstr ""
 #: src/mailman/commands/cli_withlist.py:290 src/mailman/commands/cli_withlist.py:297
 #, python-brace-format
 msgid "No such list: ${listspec}"
-msgstr "Ei ole olemassa listaa: ${listspec}"
+msgstr ""
 
 #: src/mailman/commands/cli_admins.py:51
 #, python-brace-format
@@ -491,7 +490,7 @@ msgstr ""
 #: src/mailman/commands/cli_admins.py:103 src/mailman/commands/cli_admins.py:106
 #, python-brace-format
 msgid "Invalid email address: ${email}"
-msgstr "Epäkelpo sähköpostiosoite: ${email}"
+msgstr ""
 
 #: src/mailman/commands/cli_aliases.py:33
 msgid "Regenerate the aliases appropriate for your MTA."
@@ -510,7 +509,7 @@ msgstr ""
 
 #: src/mailman/commands/cli_changeaddress.py:45
 msgid "Address {} not found."
-msgstr "Osoitetta {} ei löytynyt."
+msgstr ""
 
 #: src/mailman/commands/cli_changeaddress.py:47
 msgid "Address {} is not a valid email address."
@@ -530,7 +529,7 @@ msgstr ""
 
 #: src/mailman/commands/cli_conf.py:53
 msgid "Print the Mailman configuration."
-msgstr "Tulosta Mailman-asetukset."
+msgstr ""
 
 #: src/mailman/commands/cli_conf.py:57
 msgid ""
@@ -717,7 +716,7 @@ msgstr ""
 #: src/mailman/commands/cli_delmembers.py:123
 #, python-brace-format
 msgid "No such list: ${_list}"
-msgstr "Ei ole olemassa listaa: ${_list}"
+msgstr ""
 
 #: src/mailman/commands/cli_digests.py:38
 msgid "Operate on digests."
@@ -808,7 +807,7 @@ msgstr ""
 
 #: src/mailman/commands/cli_findmember.py:122
 msgid "{}"
-msgstr "{}"
+msgstr ""
 
 #: src/mailman/commands/cli_gatenews.py:170
 msgid "Poll the NNTP server for messages to be gatewayed to mailing lists."
@@ -893,11 +892,11 @@ msgstr ""
 #: src/mailman/commands/cli_inject.py:79
 #, python-brace-format
 msgid "No such queue: ${queue}"
-msgstr "Ei ole olemassa jonoa: ${queue}"
+msgstr ""
 
 #: src/mailman/commands/cli_lists.py:54
 msgid "List all mailing lists."
-msgstr "Listaa kaikki postituslistat."
+msgstr ""
 
 #: src/mailman/commands/cli_lists.py:58
 msgid "List only those mailing lists that are publicly advertised"
@@ -999,17 +998,17 @@ msgstr ""
 #: src/mailman/commands/cli_lists.py:202
 #, python-brace-format
 msgid "List already exists: ${fqdn_listname}"
-msgstr "Lista on jo olemassa: ${fqdn_listname}"
+msgstr ""
 
 #: src/mailman/commands/cli_lists.py:204
 #, python-brace-format
 msgid "Undefined domain: ${domain}"
-msgstr "Määrittämätön verkkotunnus: ${domain}"
+msgstr ""
 
 #: src/mailman/commands/cli_lists.py:212
 #, python-brace-format
 msgid "Created mailing list: ${mlist.fqdn_listname}"
-msgstr "Luotu postituslista: ${mlist.fqdn_listname}"
+msgstr ""
 
 #: src/mailman/commands/cli_lists.py:227
 #, python-brace-format
@@ -1032,12 +1031,12 @@ msgstr ""
 #: src/mailman/commands/cli_lists.py:256
 #, python-brace-format
 msgid "Removed list: ${listspec}"
-msgstr "Poistettu lista: ${listspec}"
+msgstr ""
 
 #: src/mailman/commands/cli_members.py:89
 #, python-brace-format
 msgid "${mlist.list_id} has no members"
-msgstr "Listalla ${mlist.list_id} ei ole jäseniä"
+msgstr ""
 
 #: src/mailman/commands/cli_members.py:121
 msgid ""
@@ -1236,7 +1235,7 @@ msgstr ""
 
 #: src/mailman/commands/cli_syncmembers.py:152
 msgid "Nothing to do"
-msgstr "Ei mitään tehtävää"
+msgstr ""
 
 #: src/mailman/commands/cli_syncmembers.py:157
 msgid ""
@@ -1286,7 +1285,7 @@ msgstr ""
 
 #: src/mailman/commands/cli_version.py:32
 msgid "Display Mailman's version."
-msgstr "Näytä Mailmanin versio."
+msgstr ""
 
 #: src/mailman/commands/cli_withlist.py:74
 msgid "ipython is not available, set use_ipython to no"
@@ -1450,7 +1449,7 @@ msgstr ""
 
 #: src/mailman/commands/eml_confirm.py:95
 msgid "Confirmed"
-msgstr "Vahvistettu"
+msgstr ""
 
 #: src/mailman/commands/eml_confirm.py:112
 msgid "Invalid Approved: password"
@@ -1479,7 +1478,7 @@ msgstr ""
 
 #: src/mailman/commands/eml_help.py:51
 msgid "n/a"
-msgstr "tyhjä / ei mitään"
+msgstr ""
 
 #: src/mailman/commands/eml_help.py:59
 #, python-brace-format
@@ -1504,7 +1503,7 @@ msgstr ""
 
 #: src/mailman/commands/eml_membership.py:79
 msgid "Join this mailing list."
-msgstr "Liity tälle postituslistalle."
+msgstr ""
 
 #: src/mailman/commands/eml_membership.py:102
 #, python-brace-format
@@ -1540,7 +1539,7 @@ msgstr ""
 
 #: src/mailman/commands/eml_membership.py:189
 msgid "Leave this mailing list."
-msgstr "Poistu tältä postituslistalta."
+msgstr ""
 
 #: src/mailman/commands/eml_membership.py:196
 #, python-brace-format
@@ -1736,7 +1735,7 @@ msgstr ""
 
 #: src/mailman/handlers/replybot.py:48
 msgid "Send automatic responses."
-msgstr "Lähetä automaattiset vastaukset."
+msgstr ""
 
 #: src/mailman/handlers/replybot.py:101
 #, python-brace-format
@@ -1801,11 +1800,11 @@ msgstr ""
 
 #: src/mailman/interfaces/pipeline.py:53
 msgid "[No details are available]"
-msgstr "[Lisätietoja ei saatavilla]"
+msgstr ""
 
 #: src/mailman/interfaces/pipeline.py:54
 msgid "[No reasons given]"
-msgstr "[Syytä ei annettu]"
+msgstr ""
 
 #: src/mailman/pipelines/builtin.py:30
 msgid "The built-in owner pipeline."
@@ -1964,7 +1963,7 @@ msgstr ""
 
 #: src/mailman/rules/no_subject.py:45
 msgid "Message has no subject"
-msgstr "Viestillä ei ole otsikkoa"
+msgstr ""
 
 #: src/mailman/rules/suspicious.py:38
 msgid "Catch messages with suspicious headers."
@@ -1988,7 +1987,7 @@ msgstr ""
 
 #: src/mailman/runners/command.py:188
 msgid "- Original message details:"
-msgstr "- Alkuperäisen viestin tiedot:"
+msgstr ""
 
 #: src/mailman/runners/command.py:194
 #, python-brace-format
@@ -2019,7 +2018,7 @@ msgstr ""
 #: src/mailman/runners/command.py:212
 #, python-brace-format
 msgid "No such command: ${command_name}"
-msgstr "Ei olemassa komentoa: ${command_name}"
+msgstr ""
 
 #: src/mailman/runners/command.py:226
 msgid ""
@@ -2072,7 +2071,7 @@ msgstr ""
 #: src/mailman/styles/base.py:59
 #, python-brace-format
 msgid "[${mlist.display_name}] "
-msgstr "[${mlist.display_name}] "
+msgstr ""
 
 #: src/mailman/styles/default.py:44
 msgid "Ordinary discussion mailing list style."
@@ -2112,7 +2111,7 @@ msgstr ""
 
 #: src/mailman/utilities/scrubber.py:58
 msgid "-------------- next part --------------\n"
-msgstr "-------------- seuraava osa --------------\n"
+msgstr ""
 
 msgid "domain:admin:notice:new-list.txt"
 msgstr ""
@@ -2158,10 +2157,6 @@ msgstr ""
 
 msgid "list:member:generic:footer.txt"
 msgstr ""
-"_______________________________________________\n"
-"$display_name postituslista -- $listname\n"
-"Listalta voi poistua lähettämällä sähköpostia osoitteeseen ${short_listname}-"
-"leave@${domain}"
 
 msgid "list:member:regular:header.txt"
 msgstr ""
@@ -2195,17 +2190,6 @@ msgstr ""
 
 msgid "list:user:notice:rejected.txt"
 msgstr ""
-"Viestisi $listname -postituslistalle torjuttiin seuraavista syistä johtuen\n"
-"\n"
-"\n"
-"\n"
-"\n"
-"\n"
-"$reasons\n"
-"\n"
-"\n"
-"\n"
-"Alkuperäinen viesti, sellaisena kuin Mailman sen sai, on liitteenä."
 
 msgid "list:user:notice:warning.txt"
 msgstr ""

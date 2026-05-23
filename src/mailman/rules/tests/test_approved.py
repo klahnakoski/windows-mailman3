@@ -28,6 +28,7 @@ from mailman.testing.helpers import (
     specialized_message_from_string as mfs,
 )
 from mailman.testing.layers import ConfigLayer
+from mailman.utilities.filesystem import File
 
 
 class TestApproved(unittest.TestCase):

@@ -31,7 +31,6 @@ import threading
 
 from contextlib import contextmanager, suppress
 from email import message_from_bytes, message_from_string
-from lazr.config import as_timedelta
 from mailman.bin.master import Loop as Master
 from mailman.config import config
 from mailman.database.transaction import transaction
@@ -41,17 +40,23 @@ from mailman.interfaces.member import DeliveryStatus, MemberRole
 from mailman.interfaces.messages import IMessageStore
 from mailman.interfaces.styles import IStyleManager
 from mailman.interfaces.usermanager import IUserManager
+from mailman.utilities.lazr.config import as_timedelta
 from mailman.runners.digest import DigestRunner
+from mailman.utilities.filesystem import open
 from mailman.utilities.mailbox import Mailbox
 from public import public
 from requests import request
-from unittest import mock
+from unittest import mock, skipIf
 from urllib.error import HTTPError
 from zope import event
 from zope.component import getUtility
 
 
 NL = '\n'
+
+#: Decorator that skips a test class or method on Windows.
+#: Use instead of ``@unittest.skipIf(sys.platform == 'win32', ...)``.
+skipWindows = public(skipIf(sys.platform == 'win32', 'Unix-only test'))
 
 
 @public
@@ -143,8 +148,7 @@ def digest_mbox(mlist):
 
 
 # Remember, Master is mailman.bin.master.Loop.
-@public
-class TestableMaster(Master):
+class _TestableMaster(Master):
     """A testable master loop watcher."""
 
     def __init__(self, start_check=None):
@@ -181,7 +185,10 @@ class TestableMaster(Master):
     def stop(self):
         """Stop the master by killing all the children."""
         for pid in self.runner_pids:
-            os.kill(pid, signal.SIGTERM)
+            try:
+                os.kill(pid, signal.SIGTERM)
+            except (ProcessLookupError, OSError):
+                pass
         self.cleanup()
         self.thread.join()
 
@@ -189,12 +196,12 @@ class TestableMaster(Master):
         """Wait until all the runners are actually running before looping."""
         starting_kids = set(self._kids)
         while starting_kids:
-            for pid in self._kids:
-                # Ignore the exception which gets raised when the child has
-                # not yet started.
+            for pid in list(starting_kids):
+                # Ignore the exception which gets raised when the child
+                # has not yet started.
                 with suppress(ProcessLookupError):
                     os.kill(pid, 0)
-                    starting_kids.remove(pid)
+                    starting_kids.discard(pid)
         # Keeping a copy of all the started child processes for use by the
         # testing environment, even after all have exited.
         self._started_kids = set(self._kids)
@@ -209,6 +216,7 @@ class TestableMaster(Master):
     def runner_pids(self):
         """The pids of all the child runner processes."""
         yield from self._started_kids
+
 
 
 class LMTP(smtplib.SMTP):
@@ -537,12 +545,12 @@ class LogFileMark:
         self._filepos = os.stat(self._filename).st_size
 
     def readline(self):
-        with open(self._filename) as fp:
+        with open(self._filename, 'r') as fp:
             fp.seek(self._filepos)
             return fp.readline()
 
     def read(self):
-        with open(self._filename) as fp:
+        with open(self._filename, 'r') as fp:
             fp.seek(self._filepos)
             return fp.read()
 
@@ -616,3 +624,21 @@ def set_delivery(mlist, subscriber, delivery_status):
     """Set delivery_status to DeliveryStatus"""
     member = mlist.members.get_member(subscriber)
     member.preferences.delivery_status = DeliveryStatus[delivery_status]
+
+
+# On Windows, replace TestableMaster with the in-thread WindowsServices
+# implementation so all callers get the right class transparently.
+# Placed at the end of the file so all helpers (e.g. get_lmtp_client) are
+# already defined before the runner-import chain re-enters this module.
+@public
+def TestableMaster(start_check=None):
+    """Factory that returns the correct testable master for the platform.
+
+    On POSIX returns a ``_TestableMaster`` (fork-based).
+    On Windows returns a ``WindowsServices`` (thread-based).
+    The import is deferred so it does not create a circular import.
+    """
+    if sys.platform == 'win32':
+        from mailman.windows.services import WindowsServices
+        return WindowsServices(start_check)
+    return _TestableMaster(start_check)

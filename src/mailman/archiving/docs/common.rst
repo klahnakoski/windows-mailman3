@@ -55,10 +55,11 @@ Sending the message to the archiver
 The `prototype` archiver archives messages to a maildir.
 
     >>> import os
+    >>> from mailman.utilities.filesystem import File
     >>> archivers['prototype'].archive_message(mlist, msg)
-    >>> archive_path = os.path.join(
+    >>> archive_path = File(
     ...     config.ARCHIVE_DIR, 'prototype', mlist.fqdn_listname, 'new')
-    >>> len(os.listdir(archive_path))
+    >>> len(archive_path.listdir())
     1
 
 

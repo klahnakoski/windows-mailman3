@@ -21,9 +21,9 @@ script ``mailman info``.  By default, the info is printed to standard output.
 By passing in the ``-o/--output`` option, you can print the info to a file.
 
     >>> from mailman.config import config
-    >>> import os
-    >>> output_path = os.path.join(config.VAR_DIR, 'output.txt')
-    >>> command('mailman info -o ' + output_path)
+    >>> from mailman.utilities.filesystem import File, open
+    >>> output_path = File(config.VAR_DIR, 'output.txt')
+    >>> command('mailman info -o ' + str(output_path))
     >>> with open(output_path) as fp:
     ...     print(fp.read())
     GNU Mailman 3...

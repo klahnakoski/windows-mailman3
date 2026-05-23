@@ -21,7 +21,6 @@ import uuid
 import logging
 
 from enum import Enum
-from lazr.config import as_boolean
 from mailman.app.membership import delete_member
 from mailman.app.workflow import Workflow
 from mailman.config import config
@@ -54,6 +53,7 @@ from mailman.interfaces.template import ITemplateLoader
 from mailman.interfaces.user import IUser
 from mailman.interfaces.usermanager import IUserManager
 from mailman.interfaces.workflow import IWorkflowStateManager
+from mailman.utilities.lazr.config import as_boolean
 from mailman.utilities.datetime import now
 from mailman.utilities.string import expand, wrap
 from public import public

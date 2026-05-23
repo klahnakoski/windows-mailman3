@@ -25,9 +25,9 @@ from importlib.resources import path
 from mailman.app.lifecycle import create_list
 from mailman.commands.cli_import import import21
 from mailman.testing.layers import ConfigLayer
+from mailman.testing.tempfile import NamedTemporaryFile
 from mailman.utilities.importer import Import21Error
 from pickle import dump
-from tempfile import NamedTemporaryFile
 from unittest.mock import patch
 
 

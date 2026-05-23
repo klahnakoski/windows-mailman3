@@ -37,7 +37,7 @@ from mailman.utilities.datetime import factory as date_factory
 from mailman.utilities.uid import UIDFactory
 from public import public
 from sqlalchemy import Boolean, Column, DateTime, ForeignKey, Integer
-from sqlalchemy.orm import relationship
+from sqlalchemy.orm import backref, relationship
 from zope.event import notify
 from zope.interface import implementer
 
@@ -60,11 +60,8 @@ class User(Model):
     is_server_owner = Column(Boolean, default=False)
 
     addresses = relationship(
-        'Address', back_populates='user',
-        foreign_keys=[Address.user_id],
+        'Address', backref='user',
         primaryjoin=(id == Address.user_id))
-    domains = relationship(
-        'Domain', secondary='domain_owner', back_populates='owners')
 
     _preferred_address_id = Column(
         Integer,
@@ -78,7 +75,7 @@ class User(Model):
 
     preferences_id = Column(Integer, ForeignKey('preferences.id'), index=True)
     preferences = relationship(
-        'Preferences', back_populates='user')
+        'Preferences', backref=backref('user', uselist=False))
 
     @dbconnection
     def __init__(self, store, display_name=None, preferences=None):

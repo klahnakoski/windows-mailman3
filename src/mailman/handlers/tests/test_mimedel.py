@@ -21,7 +21,6 @@ import os
 import sys
 import email
 import shutil
-import tempfile
 import unittest
 
 from contextlib import contextmanager, ExitStack
@@ -41,6 +40,8 @@ from mailman.testing.helpers import (
     specialized_message_from_string as mfs,
 )
 from mailman.testing.layers import ConfigLayer
+from mailman.testing.tempfile import TemporaryDirectory
+from mailman.utilities.filesystem import open
 from unittest.mock import patch
 from zope.component import getUtility
 
@@ -58,14 +59,17 @@ def dummy_script(arg=''):
     if arg == 'report':
         report = 'yes'
     with ExitStack() as resources:
-        tempdir = tempfile.mkdtemp()
-        resources.callback(shutil.rmtree, tempdir)
+        tempdir = TemporaryDirectory()
+        resources.callback(tempdir.cleanup)
         filter_path = os.path.join(tempdir, 'filter.py')
         if arg in ('noperm', 'nonexist'):
             exe = filter_path
         with open(filter_path, 'w', encoding='utf-8') as fp:
             print("""\
+import io
 import sys
+sys.stdout = io.TextIOWrapper(sys.stdout.buffer, encoding='utf-8')
+from mailman.utilities.filesystem import open
 if len(sys.argv) > 2:
     sys.exit(1)
 print('Converted text/html to text/plain{}')

@@ -24,6 +24,7 @@ from mailman.app.lifecycle import create_list
 from mailman.config import config
 from mailman.testing.helpers import specialized_message_from_string as mfs
 from mailman.testing.layers import ConfigLayer
+from mailman.utilities.filesystem import open
 
 
 class TestFileRecips(unittest.TestCase):

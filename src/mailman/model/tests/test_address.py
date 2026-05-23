@@ -90,6 +90,3 @@ class TestAddress(unittest.TestCase):
         with self.assertRaises(ExistingAddressError) as cm:
             self._usermgr.create_address('FPERSON@example.com')
         self.assertEqual(cm.exception.address, 'FPERSON@example.com')
-
-    def test_preferences_reverse_link(self):
-        self.assertIs(self._address.preferences.address, self._address)

@@ -78,7 +78,9 @@ class TestLifecycle(unittest.TestCase):
         self.assertRaises(BadDomainSpecificationError,
                           create_list, 'test@nodomain.example.org')
 
-    @unittest.skipIf(os.getuid() == 0, 'Cannot run as root')
+    @unittest.skipIf(
+        not hasattr(os, 'getuid') or os.getuid() == 0, 'Cannot run as root'
+    )
     def test_remove_list_error(self):
         # An error occurs while deleting the list's data directory.
         mlist = create_list('test@example.com')

@@ -2,6 +2,8 @@
  Plugins
 =========
 
+.. unix-only
+
 .. seealso:: See an `example Mailman plugin
              <https://gitlab.com/mailman/example-mailman-plugin>`_
              as a starting point for writing a new plugin.

@@ -39,7 +39,8 @@ from mailman.testing.helpers import (
     specialized_message_from_string as mfs,
 )
 from mailman.testing.layers import ConfigLayer
-from tempfile import TemporaryDirectory
+from mailman.testing.tempfile import TemporaryDirectory
+from mailman.utilities.filesystem import File, open
 from zope.component import getUtility
 from zope.interface import implementer
 
@@ -120,7 +121,7 @@ This is a test message.
             self._htmlna = email.message_from_binary_file(fp, Message)
         temporary_dir = TemporaryDirectory()
         self.addCleanup(temporary_dir.cleanup)
-        template_dir = temporary_dir.name
+        template_dir = str(temporary_dir)
         config.push('archiver', """\
         [paths.testing]
         template_dir: {}
@@ -132,8 +133,7 @@ This is a test message.
 
     def test_decorate_footer_with_archive_url(self):
         site_dir = os.path.join(config.TEMPLATE_DIR, 'site', 'en')
-        os.makedirs(site_dir)
-        footer_path = os.path.join(site_dir, 'myfooter.txt')
+        footer_path = File(site_dir, 'myfooter.txt')
         with open(footer_path, 'w', encoding='utf-8') as fp:
             print('${testarchiver_url}', file=fp)
         getUtility(ITemplateManager).set(
@@ -145,8 +145,7 @@ This is a test message.
 
     def test_decorate_footer_with_weburl(self):
         site_dir = os.path.join(config.TEMPLATE_DIR, 'site', 'en')
-        os.makedirs(site_dir)
-        footer_path = os.path.join(site_dir, 'footer_with_weburls.txt')
+        footer_path = File(site_dir, 'footer_with_weburls.txt')
         with open(footer_path, 'w', encoding='utf-8') as fp:
             print('${held_message_url}', file=fp)
         getUtility(ITemplateManager).set(
@@ -162,9 +161,8 @@ This is a test message.
 
     def test_trailing_space_not_removed(self):
         site_dir = os.path.join(config.TEMPLATE_DIR, 'site', 'en')
-        os.makedirs(site_dir)
-        footer_path = os.path.join(site_dir, 'myfooter.txt')
-        with open(footer_path, 'w', encoding='utf-8') as fp:
+        footer_path = File(site_dir, 'myfooter.txt')
+        with open(footer_path, 'w', encoding='utf-8', newline='') as fp:
             print('-- \r\nMy sig', file=fp)
         getUtility(ITemplateManager).set(
             'list:member:regular:footer', None, 'mailman:///myfooter.txt')
@@ -174,8 +172,7 @@ This is a test message.
 
     def test_whitespace_header_not_added(self):
         site_dir = os.path.join(config.TEMPLATE_DIR, 'site', 'en')
-        os.makedirs(site_dir)
-        header_path = os.path.join(site_dir, 'myheader.txt')
+        header_path = File(site_dir, 'myheader.txt')
         with open(header_path, 'w', encoding='utf-8') as fp:
             print(' \r\n', file=fp)
         getUtility(ITemplateManager).set(
@@ -187,8 +184,7 @@ This is a test message.
 
     def test_decorate_member_as_address(self):
         site_dir = os.path.join(config.TEMPLATE_DIR, 'site', 'en')
-        os.makedirs(site_dir)
-        footer_path = os.path.join(site_dir, 'myfooter.txt')
+        footer_path = File(site_dir, 'myfooter.txt')
         with open(footer_path, 'w', encoding='utf-8') as fp:
             print('$member', file=fp)
         getUtility(ITemplateManager).set(
@@ -206,8 +202,7 @@ This is a test message.
 
     def test_decorate_member_as_user(self):
         site_dir = os.path.join(config.TEMPLATE_DIR, 'site', 'en')
-        os.makedirs(site_dir)
-        footer_path = os.path.join(site_dir, 'myfooter.txt')
+        footer_path = File(site_dir, 'myfooter.txt')
         with open(footer_path, 'w', encoding='utf-8') as fp:
             print('$member', file=fp)
         getUtility(ITemplateManager).set(
@@ -225,8 +220,7 @@ This is a test message.
 
     def test_decorate_user_name_or_address_as_user_name(self):
         site_dir = os.path.join(config.TEMPLATE_DIR, 'site', 'en')
-        os.makedirs(site_dir)
-        footer_path = os.path.join(site_dir, 'myfooter.txt')
+        footer_path = File(site_dir, 'myfooter.txt')
         with open(footer_path, 'w', encoding='utf-8') as fp:
             print('$user_name_or_address', file=fp)
         getUtility(ITemplateManager).set(
@@ -244,8 +238,7 @@ This is a test message.
 
     def test_decorate_user_name_or_address_as_address(self):
         site_dir = os.path.join(config.TEMPLATE_DIR, 'site', 'en')
-        os.makedirs(site_dir)
-        footer_path = os.path.join(site_dir, 'myfooter.txt')
+        footer_path = File(site_dir, 'myfooter.txt')
         with open(footer_path, 'w', encoding='utf-8') as fp:
             print('$user_name_or_address', file=fp)
         getUtility(ITemplateManager).set(
@@ -263,8 +256,7 @@ This is a test message.
 
     def test_decorate_user_name_or_email_as_user_name(self):
         site_dir = os.path.join(config.TEMPLATE_DIR, 'site', 'en')
-        os.makedirs(site_dir)
-        footer_path = os.path.join(site_dir, 'myfooter.txt')
+        footer_path = File(site_dir, 'myfooter.txt')
         with open(footer_path, 'w', encoding='utf-8') as fp:
             print('$user_name_or_email', file=fp)
         getUtility(ITemplateManager).set(
@@ -282,8 +274,8 @@ This is a test message.
 
     def test_decorate_user_name_or_email_as_address(self):
         site_dir = os.path.join(config.TEMPLATE_DIR, 'site', 'en')
-        os.makedirs(site_dir)
-        footer_path = os.path.join(site_dir, 'myfooter.txt')
+        File(site_dir).makedirs()
+        footer_path = File(site_dir, 'myfooter.txt')
         with open(footer_path, 'w', encoding='utf-8') as fp:
             print('$user_name_or_email', file=fp)
         getUtility(ITemplateManager).set(
@@ -301,9 +293,8 @@ This is a test message.
 
     def test_decorate_header_footer_with_bad_character_mpa(self):
         site_dir = os.path.join(config.TEMPLATE_DIR, 'site', 'en')
-        os.makedirs(site_dir)
-        footer_path = os.path.join(site_dir, 'myfooter.txt')
-        header_path = os.path.join(site_dir, 'myheader.txt')
+        footer_path = File(site_dir, 'myfooter.txt')
+        header_path = File(site_dir, 'myheader.txt')
         with open(footer_path, 'w', encoding='utf-8') as fp:
             print('Foot\xe9r:', file=fp)
         with open(header_path, 'w', encoding='utf-8') as fp:
@@ -319,9 +310,8 @@ This is a test message.
 
     def test_decorate_header_footer_with_bad_character_mpm(self):
         site_dir = os.path.join(config.TEMPLATE_DIR, 'site', 'en')
-        os.makedirs(site_dir)
-        footer_path = os.path.join(site_dir, 'myfooter.txt')
-        header_path = os.path.join(site_dir, 'myheader.txt')
+        footer_path = File(site_dir, 'myfooter.txt')
+        header_path = File(site_dir, 'myheader.txt')
         with open(footer_path, 'w', encoding='utf-8') as fp:
             print('Foot\xe9r:', file=fp)
         with open(header_path, 'w', encoding='utf-8') as fp:
@@ -337,9 +327,8 @@ This is a test message.
 
     def test_decorate_html_nonascii_flattened_as_bytes(self):
         site_dir = os.path.join(config.TEMPLATE_DIR, 'site', 'en')
-        os.makedirs(site_dir)
-        footer_path = os.path.join(site_dir, 'myfooter.txt')
-        header_path = os.path.join(site_dir, 'myheader.txt')
+        footer_path = File(site_dir, 'myfooter.txt')
+        header_path = File(site_dir, 'myheader.txt')
         with open(footer_path, 'w', encoding='utf-8') as fp:
             print('Footer:', file=fp)
         with open(header_path, 'w', encoding='utf-8') as fp:
@@ -397,9 +386,8 @@ Footer:
 
     def test_decorate_html_nonascii_flattened_as_string(self):
         site_dir = os.path.join(config.TEMPLATE_DIR, 'site', 'en')
-        os.makedirs(site_dir)
-        footer_path = os.path.join(site_dir, 'myfooter.txt')
-        header_path = os.path.join(site_dir, 'myheader.txt')
+        footer_path = File(site_dir, 'myfooter.txt')
+        header_path = File(site_dir, 'myheader.txt')
         with open(footer_path, 'w', encoding='utf-8') as fp:
             print('Footer:', file=fp)
         with open(header_path, 'w', encoding='utf-8') as fp:
@@ -420,8 +408,7 @@ Footer:
         # Issue #196 - allow the list_id in the template uri expansion.
         list_dir = os.path.join(
             config.TEMPLATE_DIR, 'lists', 'ant.example.com', 'en')
-        os.makedirs(list_dir)
-        footer_path = os.path.join(list_dir, 'myfooter.txt')
+        footer_path = File(list_dir, 'myfooter.txt')
         with open(footer_path, 'w', encoding='utf-8') as fp:
             print('${testarchiver_url}', file=fp)
         getUtility(ITemplateManager).set(
@@ -436,8 +423,7 @@ Footer:
         # Issue #196 - allow the list_id in the template uri expansion.
         list_dir = os.path.join(
             config.TEMPLATE_DIR, 'lists', 'ant.example.com', 'it')
-        os.makedirs(list_dir)
-        footer_path = os.path.join(list_dir, 'myfooter.txt')
+        footer_path = File(list_dir, 'myfooter.txt')
         with open(footer_path, 'w', encoding='utf-8') as fp:
             print('${testarchiver_url}', file=fp)
         getUtility(ITemplateManager).set(
@@ -466,7 +452,7 @@ This is a test message.
 """)
         temporary_dir = TemporaryDirectory()
         self.addCleanup(temporary_dir.cleanup)
-        template_dir = temporary_dir.name
+        template_dir = str(temporary_dir)
         config.push('archiver', """\
         [paths.testing]
         template_dir: {}
@@ -480,8 +466,7 @@ This is a test message.
         # GL issue #208 - IArchive messages raise exceptions, breaking the
         # rfc-2369 handler and shunting messages.
         site_dir = os.path.join(config.TEMPLATE_DIR, 'site', 'en')
-        os.makedirs(site_dir)
-        footer_path = os.path.join(site_dir, 'myfooter.txt')
+        footer_path = File(site_dir, 'myfooter.txt')
         with open(footer_path, 'w', encoding='utf-8') as fp:
             print('${broken_url}', file=fp)
         getUtility(ITemplateManager).set(

@@ -24,18 +24,20 @@ written.  First, the message is written to the pickle, then the metadata
 dictionary is written.
 """
 
+import io
 import os
 import time
 import email
 import pickle
 import hashlib
 import logging
+import threading
 
 from mailman.config import config
 from mailman.email.message import Message
 from mailman.interfaces.configuration import ConfigurationUpdatedEvent
 from mailman.interfaces.switchboard import ISwitchboard
-from mailman.utilities.filesystem import makedirs
+from mailman.utilities.filesystem import File, safe_rename
 from mailman.utilities.string import expand
 from public import public
 from zope.interface import implementer
@@ -53,6 +55,7 @@ DELTA = .0001
 MAX_BAK_COUNT = 3
 
 elog = logging.getLogger('mailman.error')
+
 
 
 @public
@@ -83,7 +86,7 @@ class Switchboard:
         self.queue_directory = queue_directory
         # If configured to, create the directory if it doesn't yet exist.
         if config.create_paths:
-            makedirs(self.queue_directory, 0o770)
+            File(self.queue_directory).makedirs(0o770)
         # Fast track for no slices
         self._lower = None
         self._upper = None
@@ -105,7 +108,7 @@ class Switchboard:
         data.update(_kws)
         list_id = data.get('listid', '--nolist--')
         # Get some data for the input to the sha hash.
-        now = repr(time.time())
+        now = unique_now()
         if data.get('_plaintext'):
             protocol = 0
             msgsave = pickle.dumps(str(_msg), protocol)
@@ -137,8 +140,8 @@ class Switchboard:
             fp.write(msgsave)
             pickle.dump(data, fp, protocol)
             fp.flush()
-            os.fdatasync(fp.fileno())
-        os.rename(tmpfile, filename)
+            fdatasync(fp.fileno())
+        safe_rename(tmpfile, filename)
         return filebase
 
     def dequeue(self, filebase):
@@ -146,12 +149,12 @@ class Switchboard:
         # Calculate the filename from the given filebase.
         filename = os.path.join(self.queue_directory, filebase + '.pck')
         backfile = os.path.join(self.queue_directory, filebase + '.bak')
+        # Move the file to the backup file name for processing.  If this
+        # process crashes uncleanly the .bak file will be used to
+        # re-instate the .pck file in order to try again.
+        safe_rename(filename, backfile)
         # Read the message object and metadata.
-        with open(filename, 'rb') as fp:
-            # Move the file to the backup file name for processing.  If this
-            # process crashes uncleanly the .bak file will be used to
-            # re-instate the .pck file in order to try again.
-            os.rename(filename, backfile)
+        with open(backfile, 'rb') as fp:
             msg = pickle.load(fp)
             data = pickle.load(fp)
         if data.get('_parsemsg'):
@@ -178,7 +181,7 @@ class Switchboard:
             if preserve:
                 bad_dir = config.switchboards['bad'].queue_directory
                 psvfile = os.path.join(bad_dir, filebase + '.psv')
-                os.rename(bakfile, psvfile)
+                safe_rename(bakfile, psvfile)
             else:
                 os.unlink(bakfile)
         except EnvironmentError:
@@ -252,7 +255,7 @@ class Switchboard:
                                    filebase)
                         self.finish(filebase, preserve=True)
                     else:
-                        os.rename(src, dst)
+                        safe_ranme(src, dst)
 
 
 @public
@@ -272,3 +275,26 @@ def handle_ConfigurationUpdatedEvent(event):
             substitutions['name'] = name
             path = expand(conf.path, None, substitutions)
             config.switchboards[name] = Switchboard(name, path)
+
+
+# os.fdatasync is Unix-only; fall back to os.fsync on Windows.
+fdatasync = getattr(os, 'fdatasync', os.fsync)
+
+# Ensure enqueue() gets a strictly-increasing timestamp so that files
+# created in rapid succession sort in the order they were enqueued.
+# This also makes every filename unique, avoiding the FileExistsError
+# that os.rename() raises on Windows when two identical messages are
+# enqueued at the same clock tick.
+_enqueue_time_lock = threading.Lock()
+_enqueue_last_time = 0.0
+
+
+def unique_now():
+    """Return a repr'd float that is strictly greater than all previous calls."""
+    global _enqueue_last_time
+    with _enqueue_time_lock:
+        t = time.time()
+        if t <= _enqueue_last_time:
+            t = _enqueue_last_time + DELTA
+        _enqueue_last_time = t
+    return repr(t)

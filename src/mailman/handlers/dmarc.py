@@ -32,8 +32,6 @@ from email.header import decode_header, Header
 from email.mime.message import MIMEMessage
 from email.mime.text import MIMEText
 from email.utils import formataddr, make_msgid
-from lazr.config import as_boolean
-from mailman.config import config
 from mailman.core.i18n import _
 from mailman.interfaces.handler import IHandler
 from mailman.interfaces.mailinglist import DMARCMitigateAction, ReplyToMunging
@@ -198,11 +196,6 @@ def wrap_message(mlist, msg, msgdata):
 
 
 def process(mlist, msg, msgdata):
-    # If the message is for the owner and global mitigation is disabled,
-    # exit immediately.
-    if (msgdata.get('to_owner') and
-            not as_boolean(config.mailman.mitigate_owner_mail)):
-        return
     # If we're mitigating on policy and we have no hit, return.
     if not msgdata.get('dmarc') and not mlist.dmarc_mitigate_unconditionally:
         return

@@ -27,20 +27,21 @@ from mailman.interfaces.rules import IRule
 from mailman.interfaces.styles import IStyle
 from mailman.testing.helpers import configuration
 from mailman.testing.layers import ConfigLayer
+from mailman.testing.tempfile import TemporaryDirectory
+from mailman.utilities.filesystem import open
 from mailman.utilities.modules import (
     find_components,
     find_pluggable_components,
     hacked_sys_modules,
 )
 from pathlib import Path
-from tempfile import TemporaryDirectory
 
 
 @contextmanager
 def hack_syspath(index, path):
     old_path = sys.path[:]
     try:
-        sys.path.insert(index, path)
+        sys.path.insert(index, path.os_path if hasattr(path, 'os_path') else path)
         yield
     finally:
         sys.path = old_path

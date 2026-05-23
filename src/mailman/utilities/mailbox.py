@@ -37,7 +37,6 @@ class Mailbox(MMDF):
         return self
 
     def __exit__(self, *exc):
-        self.flush()
-        self.unlock()
+        self.close()
         # Don't suppress the exception.
         return False

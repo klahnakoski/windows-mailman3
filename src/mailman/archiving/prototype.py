@@ -22,10 +22,10 @@ import logging
 
 from contextlib import suppress
 from datetime import timedelta
-from flufl.lock import Lock, TimeOutError
 from mailbox import Maildir
 from mailman.config import config
 from mailman.interfaces.archiver import IArchiver
+from mailman.lock import Lock, TimeOutError
 from public import public
 from zope.interface import implementer
 

@@ -134,7 +134,7 @@ header...
     my-list@example.com, bperson@example.com
 
 
-Don't Cc List Address in Reply
+Don't CC List Address in Reply
 ==============================
 
 The default behavior of a personalized list is that a reply goes ``To``

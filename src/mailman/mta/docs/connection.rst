@@ -29,7 +29,7 @@ managed by the ``Connection`` class.  Each instance can transparently
 manage multiple sessions in a single connection.
 
     >>> from mailman.mta.connection import Connection, as_SecureMode
-    >>> from lazr.config import as_boolean
+    >>> from mailman.utilities.lazr import as_boolean
 
 When a ``Connection`` object is created, the host (default localhost)
 and port number of the SMTP server, as well as the maximum number of

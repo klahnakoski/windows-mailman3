@@ -28,9 +28,9 @@ from mailman.interfaces.domain import IDomainManager
 from mailman.interfaces.template import ITemplateLoader, ITemplateManager
 from mailman.testing.helpers import wait_for_webservice
 from mailman.testing.layers import ConfigLayer
+from mailman.testing.tempfile import TemporaryDirectory
 from mailman.utilities.i18n import find
 from requests import HTTPError
-from tempfile import TemporaryDirectory
 from unittest import mock
 from urllib.error import URLError
 from zope.component import getUtility

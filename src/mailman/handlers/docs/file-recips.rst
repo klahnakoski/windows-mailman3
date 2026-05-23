@@ -47,7 +47,8 @@ addresses are returned as the set of recipients.
 ::
 
     >>> import os
-    >>> file_path = os.path.join(mlist.data_path, 'members.txt')
+    >>> from mailman.utilities.filesystem import File, open
+    >>> file_path = File(mlist.data_path, 'members.txt')
     >>> with open(file_path, 'w', encoding='utf-8') as fp:
     ...     print('bperson@example.com', file=fp)
     ...     print('cperson@example.com', file=fp)

@@ -26,6 +26,7 @@ from mailman.interfaces.cache import ICacheManager
 from mailman.testing.helpers import configuration
 from mailman.testing.layers import ConfigLayer
 from mailman.utilities.datetime import factory
+from mailman.utilities.filesystem import open
 from zope.component import getUtility
 
 

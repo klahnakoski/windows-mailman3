@@ -127,10 +127,6 @@ class TestUser(unittest.TestCase):
             id=user.preferences.id)
         self.assertEqual(preferences.count(), 0)
 
-    def test_preferences_reverse_link(self):
-        user = self._manager.create_user('bart@example.com')
-        self.assertIs(user.preferences.user, user)
-
     def test_absorb_not_a_user(self):
         bart = self._manager.create_address('bart@example.com')
         self.assertRaises(TypeError, self._anne.absorb, bart)

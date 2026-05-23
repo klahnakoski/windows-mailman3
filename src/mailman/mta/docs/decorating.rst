@@ -24,23 +24,23 @@ defined, and the decoration handler is told to do personalized decorations.
 We start by writing the site-global header and footer template.
 ::
 
-    >>> import os, tempfile
-    >>> from mailman.config import config    
-    >>> template_dir = tempfile.mkdtemp()
-    >>> site_dir = os.path.join(template_dir, 'site', 'en')
-    >>> os.makedirs(site_dir)
+    >>> from mailman.config import config
+    >>> from mailman.utilities.filesystem import File, open
+    >>> from mailman.testing.tempfile import TemporaryDirectory
+    >>> template_dir = TemporaryDirectory()
+    >>> site_dir = template_dir / 'site' / 'en'
     >>> config.push('templates', """
     ... [paths.testing]
     ... template_dir: {}
     ... """.format(template_dir))
 
-    >>> myheader_path = os.path.join(site_dir, 'myheader.txt')
+    >>> myheader_path = site_dir / 'myheader.txt'
     >>> with open(myheader_path, 'w') as fp:
     ...     print("""\
     ... Delivery address: $user_address
     ... Subscribed address: $user_delivered_to
     ... """, file=fp)
-    >>> myfooter_path = os.path.join(site_dir, 'myfooter.txt')
+    >>> myfooter_path = site_dir / 'myfooter.txt'
     >>> with open(myfooter_path, 'w') as fp:
     ...     print("""\
     ... User name: $user_name

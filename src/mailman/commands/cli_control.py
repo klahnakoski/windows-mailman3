@@ -23,11 +23,13 @@ import click
 import errno
 import signal
 import logging
+import subprocess
 
-from mailman.bin.master import master_state, WatcherState
+from mailman.bin.master import _command_file, master_state, WatcherState
 from mailman.config import config
 from mailman.core.i18n import _
 from mailman.interfaces.command import ICLISubCommand
+from mailman.utilities.filesystem import File, open
 from mailman.utilities.modules import call_name
 from mailman.utilities.options import I18nCommand
 from public import public
@@ -96,41 +98,34 @@ def start(ctx, force, generate_alias_file, run_as_user, quiet):
             ctx.fail(
                 _('A previous run of GNU Mailman did not exit '
                   'cleanly ({}).  Try using --force'.format(status.name)))
-    # Daemon process startup according to Stevens, Advanced Programming in the
-    # UNIX Environment, Chapter 13.
-    pid = os.fork()
-    if pid:
-        # parent
-        if not quiet:
-            print(_("Starting Mailman's master runner"))
-        if generate_alias_file:
-            if not quiet:
-                print(_("Generating MTA alias maps"))
-            call_name(config.mta.incoming).regenerate()
-        return
-    # child: Create a new session and become the session leader, but since we
-    # won't be opening any terminal devices, don't do the ultra-paranoid
-    # suggestion of doing a second fork after the setsid() call.
-    os.setsid()
-    # Instead of cd'ing to root, cd to the Mailman runtime directory.  However,
-    # before we do that, set an environment variable used by the subprocesses
-    # to calculate their path to the $VAR_DIR.
+    # Build the command to start the master process as a detached subprocess.
     os.environ['MAILMAN_VAR_DIR'] = config.VAR_DIR
-    os.chdir(config.VAR_DIR)
-    # Exec the master watcher.
-    execl_args = [
-        sys.executable, sys.executable,
+    master_args = [
+        sys.executable,
         os.path.join(config.BIN_DIR, 'master'),
         ]
     if force:
-        execl_args.append('--force')
+        master_args.append('--force')
     # Always pass the configuration file path to the master process, so there's
     # no confusion about which one is being used.
-    execl_args.extend(['-C', config.filename])
-    qlog.debug('starting: %s', execl_args)
-    os.execl(*execl_args)
-    # We should never get here.
-    raise RuntimeError('os.execl() failed')
+    master_args.extend(['-C', config.filename])
+    qlog.debug('starting: %s', master_args)
+    # Launch the master as a detached subprocess.
+    # On Windows use CREATE_NO_WINDOW | DETACHED_PROCESS;
+    # on POSIX use start_new_session=True.
+    kwargs = {}
+    if sys.platform == 'win32':
+        kwargs['creationflags'] = (
+            subprocess.CREATE_NO_WINDOW | subprocess.DETACHED_PROCESS)
+    else:
+        kwargs['start_new_session'] = True
+    subprocess.Popen(master_args, **kwargs)
+    if not quiet:
+        print(_("Starting Mailman's master runner"))
+    if generate_alias_file:
+        if not quiet:
+            print(_("Generating MTA alias maps"))
+        call_name(config.mta.incoming).regenerate()
 
 
 @public
@@ -141,8 +136,13 @@ class Start:
 
 
 def kill_watcher(sig):
+    """Send a signal or command to the master watcher.
+
+    On POSIX, if the signal is available, send it directly.
+    Always write a command file as cross-platform fallback.
+    """
     try:
-        with open(config.PID_FILE) as fp:
+        with open(config.PID_FILE, 'r') as fp:
             pid = int(fp.read().strip())
     except (IOError, ValueError) as error:        # pragma: nocover
         # For i18n convenience
@@ -150,8 +150,29 @@ def kill_watcher(sig):
         print(error, file=sys.stderr)
         print(_('Is the master even running?'), file=sys.stderr)
         return
+    # Map signal to command name for the command file.
+    sig_to_cmd = {}
+    if hasattr(signal, 'SIGHUP'):
+        sig_to_cmd[signal.SIGHUP] = 'reopen'
+    if hasattr(signal, 'SIGUSR1'):
+        sig_to_cmd[signal.SIGUSR1] = 'restart'
+    sig_to_cmd[signal.SIGTERM] = 'stop'
+    # Write command file for cross-platform IPC.
+    cmd = sig_to_cmd.get(sig)
+    if cmd:
+        try:
+            with File(_command_file(), 'w') as fp:
+                fp.write(cmd)
+        except OSError:
+            pass
+    # Also send the actual signal on POSIX (for immediate response),
+    # or SIGTERM on Windows (which calls TerminateProcess).
     try:
-        os.kill(pid, sig)
+        if sig == signal.SIGTERM:
+            os.kill(pid, signal.SIGTERM)
+        elif hasattr(os, 'kill') and hasattr(signal, 'SIGHUP'):
+            # On POSIX, send the original signal for fast wakeup.
+            os.kill(pid, sig)
     except OSError as error:                      # pragma: nocover
         if error.errno != errno.ESRCH:
             raise
@@ -195,7 +216,17 @@ class Stop:
 def reopen(quiet):
     if not quiet:
         print(_('Reopening the Mailman runners'))
-    kill_watcher(signal.SIGHUP)
+    # Use SIGHUP if available (POSIX), otherwise use command file via SIGTERM
+    # path (the command file written by kill_watcher handles this).
+    if hasattr(signal, 'SIGHUP'):
+        kill_watcher(signal.SIGHUP)
+    else:
+        # On Windows, write the command file directly.
+        try:
+            with File(_command_file(), 'w') as fp:
+                fp.write('reopen')
+        except OSError:
+            pass
 
 
 @public
@@ -221,7 +252,16 @@ class Reopen:
 def restart(quiet):
     if not quiet:
         print(_('Restarting the Mailman runners'))
-    kill_watcher(signal.SIGUSR1)
+    # Use SIGUSR1 if available (POSIX), otherwise use command file.
+    if hasattr(signal, 'SIGUSR1'):
+        kill_watcher(signal.SIGUSR1)
+    else:
+        # On Windows, write the command file directly.
+        try:
+            with File(_command_file(), 'w') as fp:
+                fp.write('restart')
+        except OSError:
+            pass
 
 
 @public

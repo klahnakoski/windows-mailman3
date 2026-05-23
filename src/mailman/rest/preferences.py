@@ -17,8 +17,8 @@
 
 """Preferences."""
 
-from lazr.config import as_boolean
 from mailman.interfaces.member import DeliveryMode, DeliveryStatus
+from mailman.utilities.lazr.config import as_boolean
 from mailman.rest.helpers import (
     bad_request,
     etag,

@@ -88,7 +88,7 @@ class TestSystemConfiguration(unittest.TestCase):
         del json['http_etag']
         self.assertEqual(json, dict(
             description='French',
-            charset='utf-8',
+            charset='iso-8859-1',
             enabled='yes',
             self_link=('http://localhost:9001/3.0/system'
                        '/configuration/language.fr'),

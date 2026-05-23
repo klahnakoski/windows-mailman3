@@ -33,13 +33,13 @@ import datetime
 import tempfile
 
 from importlib.resources import files, read_text
-from lazr.config import as_boolean
 from mailman.config import config
 from mailman.core import initialize
 from mailman.core.initialize import INHIBIT_CONFIG_FILE
 from mailman.core.logging import get_handler
 from mailman.database.transaction import transaction
 from mailman.interfaces.domain import IDomainManager
+from mailman.utilities.lazr.config import as_boolean
 from mailman.testing.helpers import (
     get_lmtp_client,
     reset_the_world,
@@ -114,9 +114,9 @@ class ConfigLayer(MockAndMonkeyLayer):
         with open(postfix_cfg, 'w') as fp:
             print(dedent("""
             [postfix]
-            postmap_command: true
+            postmap_command: "{python}" -m mailman.mta.tests.data.fake_postmap
             transport_file_type: default
-            """), file=fp)
+            """.format(python=sys.executable.replace('\\', '/'))), file=fp)
         test_config = dedent("""
         [mailman]
         layout: testing
@@ -194,10 +194,21 @@ class ConfigLayer(MockAndMonkeyLayer):
     def tearDown(cls):
         assert cls.var_dir is not None, 'Layer not set up'
         reset_the_world()
+        # Close all logging file handlers so that the temp var_dir can be
+        # removed cleanly on Windows (where open files cannot be deleted).
+        for logger_config in config.logger_configs:
+            sub_name = logger_config.name.split('.')[-1]
+            if sub_name == 'root':
+                continue
+            logger_name = 'mailman.' + sub_name
+            log = logging.getLogger(logger_name)
+            for handler in list(log.handlers):
+                handler.close()
+                log.removeHandler(handler)
         # Destroy the test database after the tests are done so that there is
         # no data in case the tests are rerun with a database layer like mysql
         # or postgresql which are not deleted in teardown.
-        shutil.rmtree(cls.var_dir)
+        shutil.rmtree(cls.var_dir, ignore_errors=True)
         # Prevent the bit of post-processing on the .pop() that creates
         # directories.  We're basically shutting down everything and we don't
         # need the directories created.  Plus, doing so leaves a var directory

@@ -19,11 +19,11 @@
 
 import re
 
-from lazr.config import as_boolean
 from mailman.config import config
 from mailman.core.i18n import _
 from mailman.interfaces.rules import IRule
 from mailman.interfaces.template import ITemplateLoader
+from mailman.utilities.lazr.config import as_boolean
 from mailman.utilities.string import expand, wrap
 from public import public
 from zope.component import getUtility

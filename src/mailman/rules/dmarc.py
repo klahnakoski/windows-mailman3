@@ -25,12 +25,13 @@ import dns.resolver
 from dns.exception import DNSException
 from email.utils import parseaddr
 from importlib.resources import read_binary
-from lazr.config import as_timedelta
 from mailman.config import config
 from mailman.core.i18n import _
 from mailman.interfaces.mailinglist import DMARCMitigateAction
 from mailman.interfaces.rules import IRule
+from mailman.utilities.lazr.config import as_timedelta
 from mailman.utilities.datetime import now
+from mailman.utilities.filesystem import safe_rename
 from mailman.utilities.protocols import get
 from mailman.utilities.string import wrap
 from public import public
@@ -99,7 +100,7 @@ def ensure_current_suffix_list():
             os.utime(new_path, (mtime, mtime))
             # Flip the new file into the cached location.  This does not
             # modify the mtime.
-            os.rename(new_path, cached_copy_path)
+            safe_rename(new_path, cached_copy_path)
     return cached_copy_path
 
 

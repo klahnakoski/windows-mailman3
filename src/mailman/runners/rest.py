@@ -18,7 +18,9 @@
 """Start the administrative HTTP server."""
 
 
+from contextlib import suppress
 from mailman.core.runner import Runner
+from mailman.interfaces.runner import RunnerInterrupt
 from mailman.rest.gunicorn import make_gunicorn_server
 from public import public
 
@@ -30,4 +32,5 @@ class RESTRunner(Runner):
 
     def run(self):
         """See `IRunner`."""
-        make_gunicorn_server().run()
+        with suppress(RunnerInterrupt):
+            make_gunicorn_server().run()

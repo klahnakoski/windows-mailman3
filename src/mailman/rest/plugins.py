@@ -17,8 +17,8 @@
 
 """REST for plugins, dynamically proxies requests to plugin's rest_object."""
 
-from lazr.config import as_boolean
 from mailman.config import config
+from mailman.utilities.lazr.config import as_boolean
 from mailman.rest.helpers import CollectionMixin, etag, NotFound, okay
 from operator import itemgetter
 from public import public

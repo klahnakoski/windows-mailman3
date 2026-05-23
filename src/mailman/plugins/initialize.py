@@ -19,9 +19,9 @@
 
 import logging
 
-from lazr.config import as_boolean
 from mailman.config import config
 from mailman.interfaces.plugin import IPlugin
+from mailman.utilities.lazr.config import as_boolean
 from mailman.utilities.modules import call_name
 from public import public
 from zope.interface import Invalid

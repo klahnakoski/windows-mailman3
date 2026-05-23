@@ -22,13 +22,13 @@ import logging
 from email.mime.message import MIMEMessage
 from email.mime.text import MIMEText
 from email.utils import formataddr
-from lazr.config import as_boolean
 from mailman.config import config
 from mailman.core.i18n import _
 from mailman.email.message import OwnerNotification, UserNotification
 from mailman.interfaces.member import DeliveryMode
 from mailman.interfaces.messages import IMessageStore
 from mailman.interfaces.template import ITemplateLoader
+from mailman.utilities.lazr.config import as_boolean
 from mailman.utilities.string import expand, wrap
 from public import public
 from zope.component import getUtility

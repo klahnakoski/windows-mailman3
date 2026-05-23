@@ -22,11 +22,11 @@ import sys
 import click
 
 from contextlib import ExitStack, suppress
-from lazr.config import as_boolean
 from mailman.config import config
 from mailman.core.i18n import _
 from mailman.interfaces.command import ICLISubCommand
 from mailman.interfaces.listmanager import IListManager
+from mailman.utilities.lazr.config import as_boolean
 from mailman.utilities.interact import DEFAULT_BANNER, interact
 from mailman.utilities.modules import call_name
 from mailman.utilities.options import I18nCommand

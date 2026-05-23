@@ -16,8 +16,9 @@ instance of a switchboard is responsible for one queue directory.
 Create a switchboard by giving its queue name and directory.
 
     >>> import os
-    >>> from mailman.config import config    
-    >>> queue_directory = os.path.join(config.QUEUE_DIR, 'test')
+    >>> from mailman.config import config
+    >>> from mailman.utilities.filesystem import File, open
+    >>> queue_directory = File(config.QUEUE_DIR) / 'test'
     >>> from mailman.core.switchboard import Switchboard
     >>> switchboard = Switchboard('test', queue_directory)
     >>> print(switchboard.name)
@@ -180,7 +181,7 @@ Clean up
 --------
 
     >>> for file in os.listdir(bad.queue_directory):
-    ...     os.remove(os.path.join(bad.queue_directory, file))
+    ...     os.remove(str(File(bad.queue_directory) / file))
     >>> check_qfiles(bad.queue_directory)
     empty
 

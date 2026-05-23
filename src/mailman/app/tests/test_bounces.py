@@ -17,10 +17,8 @@
 
 """Testing app.bounces functions."""
 
-import os
 import uuid
 import shutil
-import tempfile
 import unittest
 
 from mailman.app.bounces import (
@@ -44,6 +42,8 @@ from mailman.testing.helpers import (
     subscribe,
 )
 from mailman.testing.layers import ConfigLayer
+from mailman.testing.tempfile import TemporaryDirectory
+from mailman.utilities.filesystem import File
 from zope.component import getUtility
 
 
@@ -328,12 +328,11 @@ Message-ID: <first>
 
 """)
         # Set up the translation context.
-        self._var_dir = tempfile.mkdtemp()
+        self._var_dir = TemporaryDirectory()
         self.addCleanup(shutil.rmtree, self._var_dir)
-        xx_template_path = os.path.join(
+        xx_template_path = File(
             self._var_dir, 'templates', 'site', 'xx',
             'list:user:notice:probe.txt')
-        os.makedirs(os.path.dirname(xx_template_path))
         config.push('xx template dir', """\
         [paths.testing]
         var_dir: {}
@@ -342,7 +341,7 @@ Message-ID: <first>
         language_manager = getUtility(ILanguageManager)
         language_manager.add('xx', 'utf-8', 'Freedonia')
         self._member.preferences.preferred_language = 'xx'
-        with open(xx_template_path, 'w') as fp:
+        with xx_template_path.open('w') as fp:
             print("""\
 blah blah blah
 $listname

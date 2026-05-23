@@ -22,7 +22,8 @@ import unittest
 from contextlib import ExitStack
 from mailman.testing.documentation import run_mailman
 from mailman.testing.layers import ConfigLayer
-from tempfile import NamedTemporaryFile
+from mailman.testing.tempfile import NamedTemporaryFile
+from mailman.utilities.filesystem import File
 
 
 class TestExternalHooks(unittest.TestCase):
@@ -35,7 +36,7 @@ class TestExternalHooks(unittest.TestCase):
         self.config_file = self.resources.enter_context(NamedTemporaryFile())
 
     def test_pre_hook_deprecated(self):
-        with open(self.config_file.name, 'w', encoding='utf-8') as fp:
+        with File(self.config_file.name).open('w') as fp:
             print("""\
 [mailman]
 pre_hook: sys.exit
@@ -52,7 +53,7 @@ propagate: yes
             "by the plugins infrastructure, and won't be called.")
 
     def test_post_hook_deprecated(self):
-        with open(self.config_file.name, 'w', encoding='utf-8') as fp:
+        with File(self.config_file.name).open('w') as fp:
             print("""\
 [mailman]
 post_hook: sys.exit

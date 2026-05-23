@@ -232,14 +232,14 @@ The next person to subscribe will get a French welcome message.
     >>> items = get_queue_messages('virgin')
     >>> print(items[0].msg)
     MIME-Version: 1.0
-    Content-Type: text/plain; charset="utf-8"
-    Content-Transfer-Encoding: base64
-    Subject: =?utf-8?q?Bienvenue_sur_la_liste_de_diffusion_=C2=AB_Ant_=C2=BB?=
+    Content-Type: text/plain; charset="iso-8859-1"
+    Content-Transfer-Encoding: quoted-printable
+    Subject: =?iso-8859-1?q?Bienvenue_sur_la_liste_de_diffusion_=AB_Ant_=BB?=
     From: ant-request@example.com
     To: Elle Person <eperson@example.com>
     ...
     <BLANKLINE>
-    SmUgc3VpcyBoZXVyZXV4IHF1ZSB2b3VzIHBvdXZleiBub3VzIHJlam9pbmRyZSE=
+    Je suis heureux que vous pouvez nous rejoindre!
 
 Standard URL substitutions include:
 
@@ -322,14 +322,14 @@ So far so good.  What happens if Fred subscribes to the Ant mailing list?
     >>> items = get_queue_messages('virgin')
     >>> print(items[0].msg)
     MIME-Version: 1.0
-    Content-Type: text/plain; charset="utf-8"
-    Content-Transfer-Encoding: base64
-    Subject: =?utf-8?q?Bienvenue_sur_la_liste_de_diffusion_=C2=AB_Ant_=C2=BB?=
+    Content-Type: text/plain; charset="iso-8859-1"
+    Content-Transfer-Encoding: quoted-printable
+    Subject: =?iso-8859-1?q?Bienvenue_sur_la_liste_de_diffusion_=AB_Ant_=BB?=
     From: ant-request@example.com
     To: Fred Person <fperson@example.com>
     ...
     <BLANKLINE>
-    SmUgc3VpcyBoZXVyZXV4IHF1ZSB2b3VzIHBvdXZleiBub3VzIHJlam9pbmRyZSE=
+    Je suis heureux que vous pouvez nous rejoindre!
 
 Okay, that's strange!  Why did Fred get the French welcome message?  It's
 because the mailing list context overrides the domain context!  Similarly, a

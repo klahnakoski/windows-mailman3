@@ -21,10 +21,12 @@ import requests
 
 from mailman.interfaces.languages import ILanguageManager
 from mailman.interfaces.listmanager import IListManager
+from mailman.utilities.filesystem import File
 from mailman.utilities.i18n import find, TemplateNotFoundError
 from public import public
 from urllib.error import URLError
 from urllib.parse import urlparse
+from urllib.request import url2pathname
 from zope.component import getUtility
 
 
@@ -47,7 +49,7 @@ def get(url, **kws):
         if len(kws) > 0:
             raise ValueError('Unexpected arguments: {}'.format(
                 COMMASPACE.join(sorted(kws))))
-        with open(parsed.path, **arguments) as fp:
+        with File(url2pathname(parsed.path)).open(**arguments) as fp:
             return fp.read()
     if parsed.scheme == 'mailman':
         mlist = code = None

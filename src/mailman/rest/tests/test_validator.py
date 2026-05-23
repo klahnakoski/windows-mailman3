@@ -19,12 +19,12 @@
 
 import unittest
 
-from lazr.config import as_boolean
 from mailman.app.lifecycle import create_list
 from mailman.core.api import API30, API31
 from mailman.database.transaction import transaction
 from mailman.interfaces.action import Action
 from mailman.interfaces.usermanager import IUserManager
+from mailman.utilities.lazr.config import as_boolean
 from mailman.rest import helpers
 from mailman.rest.validator import (
     domain_or_empty_validator,

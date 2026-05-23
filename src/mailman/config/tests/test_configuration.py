@@ -18,7 +18,6 @@
 """Test the system-wide global configuration."""
 
 import os
-import tempfile
 import unittest
 
 from contextlib import ExitStack
@@ -34,7 +33,7 @@ from mailman.interfaces.configuration import (
 )
 from mailman.testing.helpers import configuration, event_subscribers
 from mailman.testing.layers import ConfigLayer
-from tempfile import NamedTemporaryFile, TemporaryDirectory
+from mailman.testing.tempfile import NamedTemporaryFile, TemporaryDirectory
 from unittest import mock
 
 
@@ -171,7 +170,7 @@ o7DUw1/hz2Ck4N5JrgUCQQCyKveNvjzkkd8HjYs0SwM0fPjK16//5qDZ2UiDGnOe
 uEzxBDAr518Z8VFbR41in3W4Y3yCDgQlLlcETrS+zYcL
 -----END RSA PRIVATE KEY-----
 """
-        self.keyfile = tempfile.NamedTemporaryFile(delete=True)
+        self.keyfile = NamedTemporaryFile('wb')
         self.keyfile.write(privkey)
         self.keyfile.flush()
 
@@ -228,7 +227,7 @@ privkey: /missing/location.pem
         # Private Key contains non-ascii characters.
         config = Configuration()
 
-        uni_keyfile = tempfile.NamedTemporaryFile(delete=True)
+        uni_keyfile = NamedTemporaryFile('wb')
         uni_keyfile.write("¢¢¢¢¢¢¢".encode('utf-8'))
         uni_keyfile.flush()
         with ExitStack() as resources:

@@ -26,6 +26,7 @@ from itertools import product
 from mailman.config import config
 from mailman.core.constants import system_preferences
 from mailman.interfaces.errors import MailmanError
+from mailman.utilities.filesystem import File, open
 from public import public
 
 
@@ -114,21 +115,21 @@ def search(resources, template_file, mlist=None, language=None):
         languages.append(language)
     languages.reverse()
     # The non-language qualified $template_dir paths in search order.
-    templates_dir = str(files('mailman').joinpath('templates'))
-    paths = [templates_dir, os.path.join(config.TEMPLATE_DIR, 'site')]
+    templates_dir = File(files('mailman').joinpath('templates'))
+    paths = [templates_dir, File(config.TEMPLATE_DIR, 'site')]
     if mlist is not None:
         # Don't forget these are in REVERSE search order!
-        paths.append(os.path.join(
+        paths.append(File(
             config.TEMPLATE_DIR, 'domains', mlist.mail_host))
-        paths.append(os.path.join(
-            config.TEMPLATE_DIR, 'lists', mlist.fqdn_listname))
-        paths.append(os.path.join(
-            config.TEMPLATE_DIR, 'lists', mlist.list_id))
+        paths.append(
+            File(config.TEMPLATE_DIR, 'lists', mlist.fqdn_listname))
+        paths.append(
+            File(config.TEMPLATE_DIR, 'lists', mlist.list_id))
     paths.reverse()
     for language, search_path in product(languages, paths):
-        yield os.path.join(search_path, language, template_file)
+        yield search_path / language / template_file
     # Finally, fallback to the in-tree English template.
-    yield os.path.join(templates_dir, 'en', template_file)
+    yield templates_dir / 'en' / template_file
 
 
 @public
@@ -151,6 +152,7 @@ def find(template_file, mlist=None, language=None, _trace=False):
     :rtype: (string, file)
     :raises TemplateNotFoundError: when the template could not be found.
     """
+    template_file = File(template_file)
     with ExitStack() as resources:
         raw_search_order = search(resources, template_file, mlist, language)
         for search_path in raw_search_order:
@@ -158,11 +160,11 @@ def find(template_file, mlist=None, language=None, _trace=False):
                 if _trace:
                     print('@@@', search_path, end='', file=sys.stderr)   # noqa: E501, pragma: nocover
                 fp = open(search_path, 'r', encoding='utf-8')
-            except FileNotFoundError:
+            except OSError:
                 if _trace:
                     print(' MISSING', file=sys.stderr)   # pragma: nocover
             else:
                 if _trace:
                     print(' FOUND:', search_path, file=sys.stderr)  # noqa: E501, pragma: nocover
-                return search_path, fp
+                return os.path.normpath(search_path), fp
         raise TemplateNotFoundError(template_file)

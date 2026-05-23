@@ -20,7 +20,6 @@
 import os
 import re
 import sys
-import math
 import click
 import logging
 import datetime
@@ -52,7 +51,7 @@ from mailman.interfaces.nntp import NewsgroupModeration
 from mailman.interfaces.template import ITemplateLoader
 from mailman.interfaces.usermanager import IUserManager
 from mailman.model.roster import RosterVisibility
-from mailman.utilities.filesystem import makedirs
+from mailman.utilities.filesystem import File, open
 from mailman.utilities.i18n import search
 from public import public
 from sqlalchemy import Boolean
@@ -88,19 +87,11 @@ def str_to_bytes(value):
 
 
 def seconds_to_delta(value):
-    try:
-        d = datetime.timedelta(seconds=value)
-    except OverflowError:  # pragma: nocover
-        d = datetime.timedelta(days=999999)
-    return d
+    return datetime.timedelta(seconds=value)
 
 
 def days_to_delta(value):
-    try:
-        d = datetime.timedelta(days=value)
-    except OverflowError:  # pragma: nocover
-        d = datetime.timedelta(days=999999)
-    return d
+    return datetime.timedelta(days=value)
 
 
 def list_members_to_unicode(value):
@@ -242,7 +233,6 @@ TYPES = dict(
     autorespond_requests=ResponseAction,
     autoresponse_grace_period=days_to_delta,
     bounce_info_stale_after=seconds_to_delta,
-    bounce_score_threshold=math.ceil,
     bounce_you_are_disabled_warnings_interval=seconds_to_delta,
     default_nonmember_action=nonmember_action_mapping,
     dmarc_addresses=list_members_to_unicode,
@@ -295,7 +285,6 @@ DATETIME_COLUMNS = [
     ]
 
 EXCLUDES = set((
-    'acceptable_aliases',
     'accept_these_nonmembers',
     'delivery_status',
     'digest_members',
@@ -340,13 +329,11 @@ def import_config_pck(mlist, config_dict):
             converter = TYPES.get(key)
             if converter is None:
                 column = getattr(mlist.__class__, key, None)
-                column_type = getattr(column, 'type', None)
-                if (column_type is not None
-                        and isinstance(column_type, Boolean)):
+                if column is not None and isinstance(column.type, Boolean):
                     converter = bool
-                if (column_type is not None
-                        and (isinstance(column_type, SAUnicode)
-                             or isinstance(column_type, SAUnicode4Byte))):
+                if column is not None \
+                        and (isinstance(column.type, SAUnicode)
+                             or isinstance(column.type, SAUnicode4Byte)):
                     converter = maybe_truncate_mysql
             try:
                 if converter is not None:
@@ -595,7 +582,6 @@ def import_config_pck(mlist, config_dict):
         filename = '{}.txt'.format(newvar)
         with ExitStack() as resources:
             filepath = list(search(resources, filename, mlist))[0]
-        makedirs(os.path.dirname(filepath))
         with open(filepath, 'w', encoding='utf-8') as fp:
             fp.write(text)
     # Import rosters.

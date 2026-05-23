@@ -17,12 +17,12 @@
 
 """Test Postfix config."""
 
-import os
 import unittest
 
 from mailman.config import config
 from mailman.mta.postfix import LMTP
 from mailman.testing.layers import ConfigLayer
+from mailman.utilities.filesystem import File
 
 
 class TestPostfixConfig(unittest.TestCase):
@@ -36,15 +36,15 @@ configuration: python:mailman.mta.tests.data.postfix_type_default
         lmtp = LMTP()
         lmtp.regenerate()
         for db_basename in ('postfix_lmtp', 'postfix_domains'):
-            src_path = f'{config.DATA_DIR}/{db_basename}'
-            db_path = f'{src_path}.created-db'
+            src_path = File(config.DATA_DIR) / db_basename
+            db_path = File(f'{src_path}.created-db')
             self.assertTrue(
-                os.path.isfile(db_path),
+                db_path.is_file,
                 f'Created database file: {db_path}'
             )
             with open(db_path, 'r') as f:
                 self.assertEqual(
-                    src_path, f.read().rstrip('\n'),
+                    str(src_path), f.read().rstrip('\n'),
                     'Command-line argument(s) for postmap command'
                 )
         config.pop('database_type_config')
@@ -57,10 +57,10 @@ configuration: python:mailman.mta.tests.data.postfix_type_hash
         lmtp = LMTP()
         lmtp.regenerate()
         for db_basename in ('postfix_lmtp', 'postfix_domains'):
-            src_path = f'{config.DATA_DIR}/{db_basename}'
-            db_path = f'{src_path}.created-db'
+            src_path = File(config.DATA_DIR) / db_basename
+            db_path = File(f'{src_path}.created-db')
             self.assertTrue(
-                os.path.isfile(db_path),
+                db_path.is_file,
                 f'Created database file: {db_path}'
             )
             with open(db_path, 'r') as f:

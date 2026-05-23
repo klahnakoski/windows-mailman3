@@ -47,8 +47,7 @@ Message-ID: <ant>
         error_log = LogFileMark('mailman.error')
         msg, data = switchboard.dequeue(filebase)
         # Now, cause .finish() to throw an exception.
-        with patch('mailman.core.switchboard.os.rename',
-                   side_effect=OSError('Oops!')):
+        with patch('mailman.core.switchboard.safe_rename', side_effect=OSError('Oops!')):
             switchboard.finish(filebase, preserve=True)
         traceback = error_log.read().splitlines()
         self.assertEqual(traceback[1], 'Traceback (most recent call last):')

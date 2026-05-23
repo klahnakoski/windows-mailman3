@@ -26,8 +26,8 @@ from io import StringIO
 from mailman.app.lifecycle import create_list
 from mailman.testing.helpers import hackenv
 from mailman.testing.layers import ConfigLayer
+from mailman.testing.tempfile import NamedTemporaryFile
 from mailman.utilities.interact import interact
-from tempfile import NamedTemporaryFile
 from unittest.mock import patch
 
 

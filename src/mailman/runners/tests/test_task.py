@@ -21,7 +21,6 @@ import os
 import unittest
 
 from datetime import timedelta
-from lazr.config import as_timedelta
 from mailman.app.lifecycle import create_list
 from mailman.app.moderator import hold_message
 from mailman.config import config
@@ -31,6 +30,7 @@ from mailman.interfaces.messages import IMessageStore
 from mailman.interfaces.pending import IPendable, IPendings
 from mailman.interfaces.requests import IListRequests
 from mailman.interfaces.workflow import IWorkflowStateManager
+from mailman.utilities.lazr.config import as_timedelta
 from mailman.model.bounce import BounceEvent
 from mailman.model.message import Message
 from mailman.runners.task import TaskRunner

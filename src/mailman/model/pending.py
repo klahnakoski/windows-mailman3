@@ -19,7 +19,6 @@
 
 import json
 
-from lazr.config import as_timedelta
 from mailman.config import config
 from mailman.database.model import Model
 from mailman.database.transaction import dbconnection
@@ -31,6 +30,7 @@ from mailman.interfaces.pending import (
     IPendings,
 )
 from mailman.interfaces.workflow import IWorkflowStateManager
+from mailman.utilities.lazr.config import as_timedelta
 from mailman.utilities.datetime import now
 from mailman.utilities.uid import TokenFactory
 from public import public

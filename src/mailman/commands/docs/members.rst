@@ -50,7 +50,8 @@ Members are displayed in alphabetical order based on their address.
 You can also output this list to a file.
 ::
 
-    >>> from tempfile import NamedTemporaryFile
+    >>> from mailman.testing.tempfile import NamedTemporaryFile
+    >>> from mailman.utilities.filesystem import open
     >>> filename = cleanups.enter_context(NamedTemporaryFile()).name
 
     >>> command('mailman members -o ' + filename + ' ant.example.com')

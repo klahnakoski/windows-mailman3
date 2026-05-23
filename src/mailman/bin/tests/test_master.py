@@ -27,13 +27,14 @@ import unittest
 from click.testing import CliRunner
 from contextlib import ExitStack, suppress
 from datetime import timedelta
-from flufl.lock import Lock, TimeOutError
 from importlib.resources import path
 from io import StringIO
 from mailman.bin import master
 from mailman.config import config
-from mailman.testing.helpers import LogFileMark, TestableMaster
+from mailman.lock import Lock, TimeOutError
+from mailman.testing.helpers import LogFileMark, skipWindows, TestableMaster
 from mailman.testing.layers import ConfigLayer
+from mailman.utilities.filesystem import open
 from unittest.mock import patch
 
 
@@ -44,6 +45,7 @@ class FakeLock:
         pass
 
 
+@skipWindows
 class TestMaster(unittest.TestCase):
     layer = ConfigLayer
 
@@ -58,66 +60,6 @@ class TestMaster(unittest.TestCase):
         # of errors).
         with suppress(FileNotFoundError):
             os.remove(self.lock_file)
-
-    def assertIn_with_timeout(
-        self, needle, container_callable, timeout=10.0, interval=0.1
-    ):
-        """
-        A custom assertion that waits at specified intervals until a given
-        element is found in the container.
-
-        :param needle: The element to look for.
-        :param container_callable: A callable that returns the target container
-         (list, string, etc.) to evaluate dynamically.
-        :param timeout: Number of seconds before timing out.
-        :param interval: Interval between checks in seconds.
-        """
-        start_time = time.time()
-
-        while time.time() - start_time < timeout:
-            # Retrieve the latest state on each iteration
-            current_container = container_callable()
-
-            if needle in current_container:
-                break
-
-            time.sleep(interval)
-
-        self.assertIn(
-            needle,
-            current_container,
-            f"Waited for {timeout} seconds, but '{needle}' was not found.",
-        )
-
-    def assertNotIn_with_timeout(
-        self, needle, container_callable, timeout=10.0, interval=0.1
-    ):
-        """
-        A custom assertion that waits at specified intervals until a given
-        element is NO LONGER found in the container.
-
-        :param needle: The element that should be absent.
-        :param container_callable: A callable that returns the target container
-         to evaluate dynamically.
-        :param timeout: Number of seconds before timing out.
-        :param interval: Interval between checks in seconds.
-        """
-        start_time = time.time()
-
-        while time.time() - start_time < timeout:
-            # Retrieve the latest state on each iteration
-            current_container = container_callable()
-
-            if needle not in current_container:
-                break
-
-            time.sleep(interval)
-
-        self.assertNotIn(
-            needle,
-            current_container,
-            f"Waited for {timeout} seconds, but '{needle}' is still present.",
-        )
 
     def test_acquire_lock_1(self):
         lock = master.acquire_lock_1(False, self.lock_file)
@@ -226,14 +168,22 @@ Exiting.
         # handler.  If we send SIGHUP before it does, the default
         # action is to terminate the process.  We wait until we see
         # that the runner has done so by inspecting the log file.
-        self.assertIn_with_timeout("runner started.", mark.read)
+        # This is race free, and bounded in time.
+        start = time.time()
+        while ("runner started." not in mark.read()
+               and time.time() - start < 10):
+            time.sleep(0.1)
 
         mark = LogFileMark('mailman.runner')
         m._sighup_handler(None, None)
 
         # Check if the runner reopened the log.
+        start = time.time()
         needle = "command runner caught SIGHUP.  Reopening logs."
-        self.assertIn_with_timeout(needle, mark.read)
+        while (needle not in mark.read()
+               and time.time() - start < 10):
+            time.sleep(0.1)
+        self.assertIn(needle, mark.read())
 
         # Just to make sure it didn't die.
         self.assertEqual(len(list(m._kids)), 1)
@@ -256,15 +206,33 @@ Exiting.
         # handler.  If we send SIGUSR1 before it does, the default
         # action is to terminate the process.  We wait until we see
         # that the runner has done so by inspecting the log file.
-        self.assertIn_with_timeout("runner started.", mark.read)
+        # This is race free, and bounded in time.
+        start = time.time()
+        while ("runner started." not in mark.read()
+               and time.time() - start < 10):
+            time.sleep(0.1)
 
+        # Invoke the handler in a loop.  This is race free, and
+        # bounded in time.
+        start = time.time()
         mark = LogFileMark('mailman.runner')
-        m._sigusr1_handler(None, None)
-        self.assertNotIn_with_timeout(old_kid, lambda: set(m._kids))
+        while old_kid in set(m._kids) and time.time() - start < 10:
+            # We must not send signals in rapid succession, because
+            # the behavior of signals arriving while the process is in
+            # the signal handler varies.  Linux implements System V
+            # semantics, which means the default signal action is
+            # restored for the duration of the signal handler.  In
+            # this case it means to terminate the process.
+            time.sleep(1)
+            m._sigusr1_handler(None, None)
 
         # Check if the runner got the signal.
+        start = time.time()
         needle = "command runner caught SIGUSR1.  Stopping."
-        self.assertIn_with_timeout(needle, mark.read)
+        while (needle not in mark.read()
+               and time.time() - start < 10):
+            time.sleep(0.1)
+        self.assertIn(needle, mark.read())
 
         new_kids = list(m._kids)
         self.assertEqual(len(new_kids), 1)
@@ -294,16 +262,28 @@ Exiting.
         # handler.  If we send SIGTERM before it does, the default
         # action is to terminate the process and will return a
         # slightly different status code.  We wait until we see that
-        # the runner has done so by inspecting the log file.
-        self.assertIn_with_timeout("runner started.", mark.read)
+        # the runner has done so by inspecting the log file.  This is
+        # race free, and bounded in time.
+        start = time.time()
+        while ("runner started." not in mark.read()
+               and time.time() - start < 10):
+            time.sleep(0.1)
 
+        # Invoke the handler in a loop.  This is race free, and
+        # bounded in time.
+        start = time.time()
         mark = LogFileMark('mailman.runner')
-        m._sigterm_handler(None, None)
-        self.assertNotIn_with_timeout(old_kid, lambda: set(m._kids))
+        while old_kid in set(m._kids) and time.time() - start < 10:
+            time.sleep(0.1)
+            m._sigterm_handler(None, None)
 
         # Check if the runner got the signal.
+        start = time.time()
         needle = "command runner caught SIGTERM.  Stopping."
-        self.assertIn_with_timeout(needle, mark.read)
+        while (needle not in mark.read()
+               and time.time() - start < 10):
+            time.sleep(0.1)
+        self.assertIn(needle, mark.read())
 
         m.thread.join()
         self.assertEqual(len(list(m._kids)), 0)
@@ -327,16 +307,28 @@ Exiting.
         # handler.  If we send SIGINT before it does, the default
         # action is to terminate the process and will return a
         # slightly different status code.  We wait until we see that
-        # the runner has done so by inspecting the log file.
-        self.assertIn_with_timeout("runner started.", mark.read)
+        # the runner has done so by inspecting the log file.  This is
+        # race free, and bounded in time.
+        start = time.time()
+        while ("runner started." not in mark.read()
+               and time.time() - start < 10):
+            time.sleep(0.1)
 
+        # Invoke the handler in a loop.  This is race free, and
+        # bounded in time.
+        start = time.time()
         mark = LogFileMark('mailman.runner')
-        m._sigint_handler(None, None)
-        self.assertNotIn_with_timeout(old_kid, lambda: set(m._kids))
+        while old_kid in set(m._kids) and time.time() - start < 10:
+            time.sleep(0.1)
+            m._sigint_handler(None, None)
 
         # Check if the runner got the signal.
+        start = time.time()
         needle = "command runner caught SIGINT.  Stopping."
-        self.assertIn_with_timeout(needle, mark.read)
+        while (needle not in mark.read()
+               and time.time() - start < 10):
+            time.sleep(0.1)
+        self.assertIn(needle, mark.read())
 
         m.thread.join()
         self.assertEqual(len(list(m._kids)), 0)
@@ -356,7 +348,9 @@ Exiting.
         os.kill(old_kid, signal.SIGKILL)
 
         # But, we need to wait for the master to collect it.
-        self.assertNotIn_with_timeout(old_kid, lambda: set(m._kids))
+        start = time.time()
+        while old_kid in set(m._kids) and time.time() - start < 10:
+            time.sleep(0.1)
 
         new_kids = list(m._kids)
         self.assertEqual(len(new_kids), 1)

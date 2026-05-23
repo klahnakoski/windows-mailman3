@@ -23,8 +23,9 @@ import stat
 import codecs
 import logging
 
-from lazr.config import as_boolean, as_log_level
 from mailman.config import config
+from mailman.utilities.lazr.config import as_boolean, as_log_level
+from mailman.utilities.filesystem import File
 from public import public
 
 
@@ -61,7 +62,7 @@ class ReopenableFileHandler(logging.Handler):
         except FileNotFoundError:
             open_mode = 'a'    # Assume regular file
 
-        return codecs.open(self.filename, open_mode, 'utf-8')
+        return codecs.open(str(File(self.filename)), open_mode, 'utf-8')
 
     def flush(self):
         if self._stream:
@@ -86,8 +87,9 @@ class ReopenableFileHandler(logging.Handler):
 
     def close(self):
         self.flush()
-        self._stream.close()
-        self._stream = None
+        if self._stream is not None:
+            self._stream.close()
+            self._stream = None
         super().close()
 
     def reopen(self, filename=None):
@@ -145,16 +147,16 @@ def initialize(propagate=None):
     logging.basicConfig(format=config.logging.root.format,
                         datefmt=config.logging.root.datefmt,
                         level=as_log_level(config.logging.root.level))
-    # Create the sub-loggers.  Note that we'll redirect flufl.lock to
+    # Create the sub-loggers.  Note that we'll redirect mailman.lock to
     # mailman.locks.
     for logger_config in config.logger_configs:
         sub_name = logger_config.name.split('.')[-1]
         if sub_name == 'root':
             continue
         if sub_name == 'locks':
-            log = logging.getLogger('flufl.lock')
-            # Explicitly prevent flufl.lock from propagating its log messages
-            # to its root logger, i.e. the console.
+            log = logging.getLogger('mailman.lock')
+            # Explicitly prevent mailman.lock from propagating its log
+            # messages to its root logger, i.e. the console.
             log.propagate = False
         if sub_name == 'database':
             # Set both the SQLAlchemy and Alembic logs to the mailman.database

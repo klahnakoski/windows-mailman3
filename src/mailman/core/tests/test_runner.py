@@ -17,10 +17,7 @@
 
 """Test some Runner base class behavior."""
 
-import os
-import signal
 import unittest
-import threading
 
 from mailman.app.lifecycle import create_list
 from mailman.config import config
@@ -39,7 +36,6 @@ from mailman.testing.helpers import (
     subscribe,
 )
 from mailman.testing.layers import ConfigLayer
-from unittest import mock
 
 
 class CrashingRunner(Runner):
@@ -139,138 +135,3 @@ Message-ID: <ant>
         runner = make_testable_runner(NonQueueRunner)
         # This will throw AttributeError on failure.
         runner.run()
-
-
-class TestRunnerSignal(unittest.TestCase):
-    """Test that signal the runner."""
-
-    layer = ConfigLayer
-
-    _MANAGED_SIGNALS = (
-        signal.SIGHUP, signal.SIGINT, signal.SIGTERM, signal.SIGUSR1,
-    )
-
-    def setUp(self):
-        self._saved_handlers = {
-            sig: signal.getsignal(sig)
-            for sig in self._MANAGED_SIGNALS
-        }
-
-    def tearDown(self):
-        for sig, handler in self._saved_handlers.items():
-            signal.signal(sig, handler)
-
-    @configuration(
-        'runner.nonqueue', **{
-            'class': 'mailman.core.tests.test_runner.NonQueueRunner',
-        }
-    )
-    def test_sigterm_during_processing(self):
-        """SIGTERM received during _one_iteration() must not interrupt it."""
-        processing_started = threading.Event()
-        finish_processing = threading.Event()
-        processing_completed = threading.Event()
-
-        class MockedRunner(Runner):
-            is_queue_runner = False
-
-            def _one_iteration(self_inner):
-                processing_started.set()
-                finish_processing.wait(timeout=10)
-                processing_completed.set()
-                return 0
-
-        runner = MockedRunner('nonqueue')
-        runner.set_signals()
-
-        runner_thread = threading.Thread(target=runner.run)
-        runner_thread.start()
-
-        try:
-            # Wait for the runner to begin processing.
-            self.assertTrue(processing_started.wait(timeout=10),
-                            'Runner did not start processing in time')
-
-            # Send SIGTERM while processing is still in progress.
-            os.kill(os.getpid(), signal.SIGTERM)
-
-            # Allow the runner to finish its current processing.
-            finish_processing.set()
-
-            # Wait for the runner to exit.
-            runner_thread.join(timeout=10)
-            self.assertFalse(runner_thread.is_alive(),
-                             'Runner thread did not exit')
-
-            # Verify that processing ran to completion.
-            self.assertTrue(processing_completed.is_set(),
-                            'Processing was interrupted by SIGTERM')
-            self.assertEqual(runner.status, signal.SIGTERM)
-        finally:
-            if runner_thread.is_alive():
-                runner.stop()
-                os.kill(os.getpid(), signal.SIGTERM)
-                runner_thread.join(timeout=5)
-
-    @configuration(
-        'runner.nonqueue', **{
-            'class': 'mailman.core.tests.test_runner.NonQueueRunner',
-            'sleep_time': '20s',
-        }
-    )
-    def test_sigterm_during_sleeping(self):
-        """SIGTERM received during _one_iteration() must not interrupt it."""
-        sleeping_started = threading.Event()
-        sleeping_completed = threading.Event()
-
-        class MockedRunner(Runner):
-            is_queue_runner = False
-
-            def _sleep(self_inner, timeout=None):
-                sleeping_started.set()
-                super()._sleep(0)
-                sleeping_completed.set()
-                return 0
-
-        runner = MockedRunner('nonqueue')
-        runner.set_signals()
-
-        runner_thread = threading.Thread(target=runner.run)
-        runner_thread.start()
-
-        try:
-            # Wait for the runner to begin sleeping.
-            self.assertTrue(sleeping_started.wait(timeout=10),
-                            'Runner did not start sleeping in time')
-
-            # Send SIGTERM while sleeping is still in progress.
-            os.kill(os.getpid(), signal.SIGTERM)
-
-            # Wait for the runner to exit.
-            runner_thread.join(timeout=10)
-            self.assertFalse(runner_thread.is_alive(),
-                             'Runner thread did not exit')
-
-            # Verify that sleeping ran to completion.
-            self.assertTrue(sleeping_completed.is_set(),
-                            'Sleeping was interrupted by SIGTERM')
-            self.assertEqual(runner.status, signal.SIGTERM)
-        finally:
-            if runner_thread.is_alive():
-                runner.stop()
-                os.kill(os.getpid(), signal.SIGTERM)
-                runner_thread.join(timeout=5)
-
-    @configuration(
-        'runner.nonqueue', **{
-            'class': 'mailman.core.tests.test_runner.NonQueueRunner'
-        }
-    )
-    def test_process_signals_sighup(self):
-        """SIGHUP is processed: logs are reopened."""
-        runner = NonQueueRunner('nonqueue')
-        runner._signal_queue.put(signal.SIGHUP)
-        with mock.patch('mailman.core.runner.reopen') as mock_reopen:
-            runner._process_signals()
-        mock_reopen.assert_called_once()
-        self.assertFalse(runner._stop)

@@ -18,7 +18,6 @@
 """Test the outgoing runner."""
 
 import logging
-import tempfile
 import unittest
 import mailman.handlers.validate_authenticity
 
@@ -30,6 +29,7 @@ from mailman.testing.helpers import (
     specialized_message_from_string as message_from_string,
 )
 from mailman.testing.layers import ConfigLayer
+from mailman.testing import tempfile
 from unittest.mock import patch
 
 

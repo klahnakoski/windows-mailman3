@@ -17,7 +17,6 @@
 
 """REST for mailing lists."""
 
-from lazr.config import as_boolean
 from mailman.app.digests import (
     bump_digest_number_and_volume,
     maybe_send_digest_now,
@@ -35,6 +34,7 @@ from mailman.interfaces.mailinglist import IListArchiverSet
 from mailman.interfaces.member import MemberRole
 from mailman.interfaces.styles import IStyleManager
 from mailman.interfaces.subscriptions import ISubscriptionService
+from mailman.utilities.lazr.config import as_boolean
 from mailman.rest.bans import BannedEmails
 from mailman.rest.header_matches import HeaderMatches
 from mailman.rest.helpers import (

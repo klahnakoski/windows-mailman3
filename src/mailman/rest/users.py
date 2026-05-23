@@ -18,13 +18,13 @@
 """REST for users."""
 
 from functools import lru_cache
-from lazr.config import as_boolean
 from mailman.config import config
 from mailman.interfaces.address import (
     ExistingAddressError,
     InvalidEmailAddressError,
 )
 from mailman.interfaces.usermanager import IUserManager
+from mailman.utilities.lazr.config import as_boolean
 from mailman.rest.addresses import PreferredAddress, UserAddresses
 from mailman.rest.helpers import (
     bad_request,

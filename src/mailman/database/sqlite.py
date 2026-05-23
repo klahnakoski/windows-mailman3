@@ -23,6 +23,7 @@ from mailman.database.base import SABaseDatabase
 from public import public
 from sqlalchemy.pool import NullPool
 from urllib.parse import urlparse
+from urllib.request import url2pathname
 
 
 @public
@@ -35,11 +36,11 @@ class SQLiteDatabase(SABaseDatabase):
             'Database url mismatch (expected sqlite prefix): {0}'.format(url))
         # Ensure that the SQLite database file has the proper permissions,
         # since SQLite doesn't play nice with umask.
-        path = os.path.normpath(parts.path)
-        fd = os.open(
-            path,
-            os.O_WRONLY | os.O_NONBLOCK | os.O_CREAT,
-            0o666)
+        path = os.path.normpath(url2pathname(parts.path))
+        open_flags = os.O_WRONLY | os.O_CREAT
+        if hasattr(os, 'O_NONBLOCK'):
+            open_flags |= os.O_NONBLOCK
+        fd = os.open(path, open_flags, 0o666)
         # Ignore errors
         if fd > 0:
             os.close(fd)

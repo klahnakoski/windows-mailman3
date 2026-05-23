@@ -1,9 +1,0 @@
-Kami telah menerima pesan dari alamat Anda <$sender_email> yang meminta
-respons otomatis dari milis $listname.
-
-Jumlah yang kami lihat hari ini: $count. Untuk menghindari masalah seperti
-loop email antar robot email, kami tidak akan mengirimkan respons lebih lanjut
-kepada Anda hari ini. Silakan coba lagi besok.
-
-Jika Anda yakin pesan ini salah, atau jika Anda memiliki pertanyaan, silakan
-hubungi pemilik milis di $owner_email.

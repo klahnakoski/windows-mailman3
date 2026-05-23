@@ -28,6 +28,7 @@ from mailman.app.lifecycle import create_list
 from mailman.config import config
 from mailman.interfaces.languages import ILanguageManager
 from mailman.testing.layers import ConfigLayer
+from mailman.utilities.filesystem import open
 from mailman.utilities.i18n import find, search, TemplateNotFoundError
 from zope.component import getUtility
 
@@ -67,11 +68,14 @@ class TestSearchOrder(unittest.TestCase):
                 resource_path('mailman').joinpath('templates').parent)
             raw_search_order = search(
                 resources, template_file, mailing_list, language)
+        var_dir_fwd = self.var_dir.replace(os.sep, '/')
+        in_tree_fwd = in_tree.replace(os.sep, '/')
         for path in raw_search_order:
-            if path.startswith(self.var_dir):
-                path = '/v' + path[len(self.var_dir):]
-            elif path.startswith(in_tree):
-                path = '/m' + path[len(in_tree):]
+            path = str(path).replace(os.sep, '/')
+            if path.startswith(var_dir_fwd):
+                path = '/v' + path[len(var_dir_fwd):]
+            elif path.startswith(in_tree_fwd):
+                path = '/m' + path[len(in_tree_fwd):]
             else:
                 # This will cause tests to fail, so keep the full bogus
                 # pathname for better debugging.
@@ -197,7 +201,6 @@ class TestFind(unittest.TestCase):
         self.fp = None
         # Populate the template directories with a few fake templates.
         def write(text, path):                             # noqa: E306
-            os.makedirs(os.path.dirname(path))
             with open(path, 'w') as fp:
                 fp.write(text)
         self.xxsite = os.path.join(

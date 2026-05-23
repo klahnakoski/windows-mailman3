@@ -32,6 +32,7 @@ import mailman.config.config
 
 from importlib.resources import read_text
 from mailman.interfaces.database import IDatabaseFactory
+from mailman.utilities.filesystem import open
 from public import public
 from zope.component import getUtility
 from zope.configuration import xmlconfig

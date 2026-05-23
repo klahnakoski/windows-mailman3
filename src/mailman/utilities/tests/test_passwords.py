@@ -23,6 +23,7 @@ import unittest
 from mailman.config import config
 from mailman.testing.helpers import configuration
 from mailman.testing.layers import ConfigLayer
+from mailman.utilities.filesystem import File
 from mailman.utilities.passwords import PasswordContext
 
 

@@ -30,6 +30,7 @@ By putting a Python function somewhere on your ``sys.path``, you can have
 ``shell`` call that function on a given mailing list.
 
     >>> from mailman.config import config
+    >>> from mailman.utilities.filesystem import File, open
     >>> import os, sys
     >>> old_path = sys.path[:]
     >>> sys.path.insert(0, config.VAR_DIR)
@@ -40,7 +41,8 @@ By putting a Python function somewhere on your ``sys.path``, you can have
 The function takes at least a single argument, the mailing list.
 ::
 
-    >>> with open(os.path.join(config.VAR_DIR, 'showme.py'), 'w') as fp:
+    >>> from mailman.utilities.filesystem import File
+    >>> with File(config.VAR_DIR, 'showme.py').open('w') as fp:
     ...     print("""\
     ... def showme(mlist):
     ...     print("The list's name is", mlist.fqdn_listname)

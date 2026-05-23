@@ -28,15 +28,15 @@ import unittest
 from click.testing import CliRunner
 from contextlib import ExitStack, suppress
 from datetime import datetime, timedelta
-from flufl.lock import SEP
 from importlib.resources import path
 from mailman.bin.master import WatcherState
 from mailman.commands.cli_control import reopen, restart, start
 from mailman.config import config
-from mailman.testing.helpers import configuration
+from mailman.lock import SEP
+from mailman.testing.helpers import configuration, skipWindows
 from mailman.testing.layers import ConfigLayer
+from mailman.utilities.filesystem import open
 from public import public
-from tempfile import TemporaryDirectory
 from unittest.mock import patch
 
 
@@ -177,6 +177,7 @@ def clean_stale_locks():
         os.unlink(config.LOCK_FILE)
 
 
+@skipWindows
 class TestControl(unittest.TestCase):
     layer = ConfigLayer
     maxDiff = None
@@ -288,7 +289,7 @@ class TestControl(unittest.TestCase):
             # we drop support for Python 3.5.
             self.assertTrue(mock_regenerate.called)
 
-
+@skipWindows
 class TestControlSimple(unittest.TestCase):
     layer = ConfigLayer
     maxDiff = None

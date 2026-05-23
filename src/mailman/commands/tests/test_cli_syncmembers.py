@@ -29,7 +29,7 @@ from mailman.interfaces.subscriptions import ISubscriptionManager
 from mailman.interfaces.usermanager import IUserManager
 from mailman.testing.helpers import get_queue_messages, subscribe
 from mailman.testing.layers import ConfigLayer
-from tempfile import NamedTemporaryFile
+from mailman.testing.tempfile import NamedTemporaryFile
 from zope.component import getUtility
 
 

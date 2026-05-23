@@ -34,6 +34,19 @@ class RunnerCrashEvent:
 
 
 @public
+class RunnerInterrupt(Exception):
+    """A runner received a system call interrupting signal.
+
+    PEP 475 automatically, and at the C layer, retries system calls such as
+    time.sleep().  This can mean runners with long sleeps in their _snooze()
+    method won't actually exit.  This exception is always raised in Mailman's
+    runner signal handlers to prevent this behavior.  Runners that implement
+    their own .run() method must be prepared to handle this, usually by
+    ignoring it.
+    """
+
+
+@public
 class IRunner(Interface):
     """The runner."""
 

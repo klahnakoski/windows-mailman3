@@ -43,9 +43,11 @@ from mailman.testing.helpers import (
     subscribe,
 )
 from mailman.testing.layers import ConfigLayer
+from mailman.testing.tempfile import TemporaryDirectory
 from string import Template
-from tempfile import TemporaryDirectory
 from zope.component import getUtility
+
+from mailman.utilities.filesystem import File
 
 
 class TestDigest(unittest.TestCase):
@@ -106,8 +108,8 @@ class TestDigest(unittest.TestCase):
         msg['Content-Type'] = 'multipart/mixed'
         msg.attach(MIMEText('message with non-ascii chars: \xc3\xa9',
                             'plain', 'utf-8'))
-        mbox = digest_mbox(self._mlist)
-        mbox.add(msg.as_string())
+        with digest_mbox(self._mlist) as mbox:
+            mbox.add(msg.as_string())
         # Use any error logs as the error message if the test fails.
         error_log = LogFileMark('mailman.error')
         make_digest_messages(self._mlist, msg)
@@ -389,9 +391,8 @@ class TestI18nDigest(unittest.TestCase):
         # Add a French version of the digest masthead.
         tempdir = TemporaryDirectory()
         self.addCleanup(tempdir.cleanup)
-        french_path = os.path.join(tempdir.name, 'fr', 'masthead.txt')
-        os.makedirs(os.path.dirname(french_path))
-        with open(french_path, 'w', encoding='utf-8') as fp:
+        french_path = File(tempdir, 'fr', 'masthead.txt')
+        with french_path.open('w', encoding='utf-8') as fp:
             print("""\
 Envoyez vos messages pour la liste $display_name à
 \t$got_list_email
@@ -408,7 +409,7 @@ qu'il soit plus spécifique que « Re: Contenu du groupe de $display_name...
 """, file=fp)
         getUtility(ITemplateManager).set(
             'list:member:digest:masthead', self._mlist.list_id,
-            'file:///{}/$language/masthead.txt'.format(tempdir.name))
+            'file:///{}/$language/masthead.txt'.format(str(tempdir)))
 
     def test_multilingual_digest(self):
         # When messages come in with a content-type character set different
@@ -442,12 +443,12 @@ Content-Transfer-Encoding: 7bit
         # The MIME version contains a mix of French and Japanese.  The digest
         # chrome added by Mailman is in French.
         self.assertEqual(mime['subject'].encode(),
-                         '=?utf-8?q?Groupe_Test=2C_Vol_1=2C_Parution_1?=')
+                         '=?iso-8859-1?q?Groupe_Test=2C_Vol_1=2C_Parution_1?=')
         self.assertEqual(str(mime['subject']),
                          'Groupe Test, Vol 1, Parution 1')
-        # The first subpart contains the utf-8 masthead.
+        # The first subpart contains the iso-8859-1 masthead.
         masthead = mime.get_payload(0).get_payload(decode=True).decode(
-            'utf-8')
+            'iso-8859-1')
         self.assertMultiLineEqual(masthead.splitlines()[0],
                                   'Envoyez vos messages pour la liste Test à')
         # The second subpart contains the utf-8 table of contents.

@@ -20,7 +20,6 @@
 import os
 import sys
 import shutil
-import tempfile
 import unittest
 
 from importlib.resources import path
@@ -32,6 +31,8 @@ from mailman.testing.helpers import (
     specialized_message_from_string as mfs,
 )
 from mailman.testing.layers import ConfigLayer
+from mailman.testing.tempfile import TemporaryDirectory
+from mailman.utilities.filesystem import open
 
 
 class TestMhonarc(unittest.TestCase):
@@ -53,7 +54,7 @@ but the water deserves to be swum.
 """)
         with transaction():
             self._mlist = create_list('test@example.com')
-        tempdir = tempfile.mkdtemp()
+        tempdir = TemporaryDirectory()
         self.addCleanup(shutil.rmtree, tempdir)
         # Here's the command to execute our fake MHonArc process.
         with path('mailman.archiving.tests', 'fake_mhonarc.py') as source:

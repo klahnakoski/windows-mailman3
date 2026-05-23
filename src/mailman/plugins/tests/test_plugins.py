@@ -27,7 +27,7 @@ from mailman.plugins.initialize import initialize
 from mailman.plugins.testing.layer import PluginRESTLayer
 from mailman.testing.helpers import call_api
 from mailman.testing.layers import ConfigLayer
-from tempfile import TemporaryDirectory
+from mailman.testing.tempfile import TemporaryDirectory
 from types import SimpleNamespace
 from unittest.mock import patch
 from urllib.error import HTTPError

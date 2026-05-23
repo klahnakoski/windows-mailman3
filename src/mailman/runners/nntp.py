@@ -28,10 +28,10 @@ import subprocess
 
 from datetime import datetime
 from io import BytesIO
-from lazr.config import as_timedelta
 from mailman.config import config
 from mailman.core.runner import Runner
 from mailman.interfaces.nntp import NewsgroupModeration
+from mailman.utilities.lazr.config import as_timedelta
 from public import public
 
 

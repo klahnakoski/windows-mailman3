@@ -36,8 +36,8 @@ Let's say Mailman shunted a message file.
 Once we've figured out the file name of the shunted message, we can print it.
 ::
 
-    >>> from os.path import join
-    >>> qfile = join(shuntq.queue_directory, basename + '.pck')
+    >>> from mailman.utilities.filesystem import File, open
+    >>> qfile = str(File(shuntq.queue_directory) / (basename + '.pck'))
 
     >>> command('mailman qfile ' + qfile)
     [----- start pickle -----]

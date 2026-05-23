@@ -35,6 +35,7 @@ from mailman.testing.helpers import (
 )
 from mailman.testing.layers import ConfigLayer
 from mailman.utilities.datetime import factory, now, RFC822_DATE_FMT
+from mailman.utilities.filesystem import open
 from zope.interface import implementer
 
 

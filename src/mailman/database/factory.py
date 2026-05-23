@@ -23,7 +23,6 @@ import alembic.command
 
 from alembic.migration import MigrationContext
 from alembic.script import ScriptDirectory
-from flufl.lock import Lock
 from mailman.config import config
 from mailman.database.alembic import alembic_cfg
 from mailman.database.model import Model
@@ -32,6 +31,7 @@ from mailman.interfaces.database import (
     IDatabase,
     IDatabaseFactory,
 )
+from mailman.lock import Lock
 from mailman.utilities.modules import call_name
 from public import public
 from sqlalchemy import MetaData

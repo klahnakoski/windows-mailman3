@@ -26,7 +26,8 @@ from mailman.interfaces.member import MemberRole
 from mailman.interfaces.usermanager import IUserManager
 from mailman.testing.helpers import subscribe
 from mailman.testing.layers import ConfigLayer
-from tempfile import NamedTemporaryFile
+from mailman.testing.tempfile import NamedTemporaryFile
+from mailman.utilities.filesystem import open
 from zope.component import getUtility
 
 

@@ -20,11 +20,12 @@
 import sys
 import click
 
-from lazr.config import as_boolean
 from mailman.config import config
 from mailman.core.api import API30, API31
 from mailman.core.i18n import _
 from mailman.interfaces.command import ICLISubCommand
+from mailman.utilities.lazr.config import as_boolean
+from mailman.utilities.filesystem import File
 from mailman.utilities.options import I18nCommand
 from mailman.version import MAILMAN_VERSION_FULL
 from public import public
@@ -49,7 +50,7 @@ def info(output, verbose):
     """See `ICLISubCommand`."""
     print(MAILMAN_VERSION_FULL, file=output)
     print('Python', sys.version, file=output)
-    print('config file:', config.filename, file=output)
+    print('config file:', File(config.filename), file=output)
     print('db url:', config.db.url, file=output)
     print('devmode:',
           'ENABLED' if as_boolean(config.devmode.enabled) else 'DISABLED',
@@ -69,7 +70,7 @@ def info(output, verbose):
             longest = max(longest, len(attribute))
         for attribute in sorted(paths):
             print('    {0:{2}} = {1}'.format(
-                attribute, paths[attribute], longest))
+                attribute, File(paths[attribute]), longest))
 
 
 @public

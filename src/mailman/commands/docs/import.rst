@@ -26,10 +26,9 @@ You must also specify a pickle file to import.
 
 Too bad the list doesn't exist.
 
-    >>> from importlib.resources import path
-    >>> with path('mailman.testing', 'config.pck') as pickle_path:
-    ...     pickle_file = str(pickle_path)
-    ...     command('mailman import21 import@example.com ' + pickle_file)
+    >>> from mailman.utilities.filesystem import File, open
+    >>> pickle_file = File('mailman.testing', 'config.pck')
+    >>> command('mailman import21 import@example.com ' + str(pickle_file))
     Usage: ... [OPTIONS] LISTSPEC PICKLE_FILE
     Try 'import21 --help' for help.
     <BLANKLINE>
@@ -39,12 +38,12 @@ When the mailing list exists, you must specify a real pickle file to import
 from.
 ::
 
-    >>> from mailman.app.lifecycle import create_list   
+    >>> from mailman.app.lifecycle import create_list
     >>> mlist = create_list('import@example.com')
     >>> from mailman.config import config
     >>> transaction = config.db    
     >>> transaction.commit()
-    >>> command('mailman import21 import@example.com ' + __file__)
+    >>> command('mailman import21 import@example.com ' + str(File(__file__)))
     Usage: ... [OPTIONS] LISTSPEC PICKLE_FILE
     Try 'import21 --help' for help.
     <BLANKLINE>

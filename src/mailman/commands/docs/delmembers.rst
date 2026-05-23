@@ -99,7 +99,8 @@ First we need a list with some members.
 Now we can delete some members.
 ::
 
-    >>> from tempfile import NamedTemporaryFile
+    >>> from mailman.testing.tempfile import NamedTemporaryFile
+    >>> from mailman.utilities.filesystem import open
     >>> filename = cleanups.enter_context(NamedTemporaryFile()).name
     >>> with open(filename, 'w', encoding='utf-8') as fp:
     ...     print("""\

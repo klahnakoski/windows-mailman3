@@ -68,7 +68,7 @@ from mailman.model.digests import OneLastDigest
 from mailman.model.member import Member
 from mailman.model.mime import ContentFilter
 from mailman.model.preferences import Preferences
-from mailman.utilities.filesystem import makedirs
+from mailman.utilities.filesystem import File
 from mailman.utilities.string import expand
 from public import public
 from sqlalchemy import (
@@ -224,11 +224,9 @@ class MailingList(Model):
     archive_rendering_mode = Column(Enum(ArchiveRenderingMode))
     # ORM relationships.
     header_matches = relationship(
-        'HeaderMatch', back_populates='mailing_list',
+        'HeaderMatch', backref='mailing_list',
         cascade="all, delete-orphan",
         order_by="HeaderMatch._position")
-    acceptable_aliases = relationship(
-        'AcceptableAlias', back_populates='mailing_list')
 
     def __init__(self, fqdn_listname):
         super().__init__()
@@ -244,7 +242,7 @@ class MailingList(Model):
         # constructor is called, SQLAlchemy's `load` event isn't triggered.
         # Thus we need to set up the rosters explicitly.
         self._post_load()
-        makedirs(self.data_path)
+        File(self.data_path).makedirs()
 
     def _post_load(self, *args):
         # This hooks up to SQLAlchemy's `load` event.
@@ -564,8 +562,7 @@ class AcceptableAlias(Model):
     mailing_list_id = Column(
         Integer, ForeignKey('mailinglist.id'),
         index=True, nullable=False)
-    mailing_list = relationship(
-        'MailingList', back_populates='acceptable_aliases')
+    mailing_list = relationship('MailingList', backref='acceptablealias')
     alias = Column(SAUnicode, index=True, nullable=False)
 
     def __init__(self, mailing_list, alias):
@@ -694,8 +691,6 @@ class HeaderMatch(Model):
         Integer,
         ForeignKey('mailinglist.id'),
         index=True, nullable=False)
-    mailing_list = relationship(
-        'MailingList', back_populates='header_matches')
 
     _position = Column('position', Integer, index=True, default=0)
     header = Column(SAUnicode)

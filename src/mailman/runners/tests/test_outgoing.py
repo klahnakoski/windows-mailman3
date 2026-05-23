@@ -23,7 +23,6 @@ import logging
 import unittest
 
 from datetime import datetime, timedelta
-from lazr.config import as_timedelta
 from mailman.app.bounces import send_probe
 from mailman.app.lifecycle import create_list
 from mailman.config import config
@@ -34,6 +33,7 @@ from mailman.interfaces.messages import IMessageStore
 from mailman.interfaces.mta import SomeRecipientsFailed
 from mailman.interfaces.pending import IPendings
 from mailman.interfaces.usermanager import IUserManager
+from mailman.utilities.lazr.config import as_timedelta
 from mailman.runners.outgoing import OutgoingRunner
 from mailman.testing.helpers import (
     configuration,
@@ -44,6 +44,7 @@ from mailman.testing.helpers import (
 )
 from mailman.testing.layers import ConfigLayer, SMTPLayer
 from mailman.utilities.datetime import factory, now
+from mailman.utilities.filesystem import open
 from zope.component import getUtility
 
 

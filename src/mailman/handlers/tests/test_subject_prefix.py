@@ -35,14 +35,12 @@ class TestSubjectPrefix(unittest.TestCase):
         self._mlist = create_list('test@example.com')
         self._process = config.handlers['subject-prefix'].process
         language_manager = getUtility(ILanguageManager)
-        language_manager.add('xx', 'utf-8', 'Freedonia')
-        language_manager.add('yy', 'us-ascii', 'Ylandia')
-        self._mlist.preferred_language = 'yy'
+        if 'xx' not in language_manager:
+            language_manager.add('xx', 'utf-8', 'Freedonia')
 
     def tearDown(self):
         # The LanguageManager may need a 'remove' method.
         del getUtility(ILanguageManager)._languages['xx']
-        del getUtility(ILanguageManager)._languages['yy']
 
     def test_isdigest(self):
         # If the message is destined for the digest, the Subject header does
@@ -104,8 +102,10 @@ class TestSubjectPrefix(unittest.TestCase):
         # Re: prefix with non-ascii.
         msg = Message()
         msg['Subject'] = '=?utf-8?Q?Re:_[Test]_A_test_message?='
-        self._mlist.preferred_language = 'xx'
+        old_charset = self._mlist.preferred_language.charset
+        self._mlist.preferred_language.charset = 'utf-8'
         self._process(self._mlist, msg, {})
+        self._mlist.preferred_language.charset = old_charset
         self.assertEqual(str(msg['subject']), '[Test] Re: A test message')
 
     def test_re_prefix_mixed(self):
@@ -125,6 +125,7 @@ class TestSubjectPrefix(unittest.TestCase):
     def test_multiline_subject_non_ascii_list(self):
         # The subject appears on multiple lines on a non-ascii list.
         self._mlist.preferred_language = 'xx'
+        self._mlist.preferred_language.charset = 'utf-8'
         msg = Message()
         msg['Subject'] = '\n A test message'
         self._process(self._mlist, msg, {})
@@ -152,8 +153,10 @@ class TestSubjectPrefix(unittest.TestCase):
         # Incoming subject is only the prefix.
         msg = Message()
         msg['Subject'] = '=?utf-8?Q?[Test]_?='
-        self._mlist.preferred_language = 'xx'
+        old_charset = self._mlist.preferred_language.charset
+        self._mlist.preferred_language.charset = 'utf-8'
         self._process(self._mlist, msg, {})
+        self._mlist.preferred_language.charset = old_charset
         subject = msg['subject']
         self.assertEqual(str(subject), '[Test] (no subject)')
 
@@ -177,8 +180,10 @@ class TestSubjectPrefix(unittest.TestCase):
         # Incoming subject is only Re:.
         msg = Message()
         msg['Subject'] = '=?utf-8?Q?Re:?='
-        self._mlist.preferred_language = 'xx'
+        old_charset = self._mlist.preferred_language.charset
+        self._mlist.preferred_language.charset = 'utf-8'
         self._process(self._mlist, msg, {})
+        self._mlist.preferred_language.charset = old_charset
         subject = msg['subject']
         self.assertEqual(str(subject), '[Test] Re: ')
 
@@ -202,8 +207,10 @@ class TestSubjectPrefix(unittest.TestCase):
         # Incoming subject is empty.
         msg = Message()
         msg['Subject'] = '=?utf-8?Q?_?='
-        self._mlist.preferred_language = 'xx'
+        old_charset = self._mlist.preferred_language.charset
+        self._mlist.preferred_language.charset = 'utf-8'
         self._process(self._mlist, msg, {})
+        self._mlist.preferred_language.charset = old_charset
         subject = msg['subject']
         self.assertEqual(str(subject), '[Test] (no subject)')
 
@@ -256,8 +263,10 @@ class TestSubjectPrefix(unittest.TestCase):
         # language if possible.
         msg = Message()
         msg['Subject'] = '=?gb2312?b?1tDOxA==?='
-        self._mlist.preferred_language = 'xx'
+        old_charset = self._mlist.preferred_language.charset
+        self._mlist.preferred_language.charset = 'utf-8'
         self._process(self._mlist, msg, {})
+        self._mlist.preferred_language.charset = old_charset
         decoded = decode_header(msg['Subject'])
         self.assertEqual(decoded,
                          [(b'[Test] \xe4\xb8\xad\xe6\x96\x87', 'utf-8')])
@@ -267,18 +276,21 @@ class TestSubjectPrefix(unittest.TestCase):
         # preferred language.
         msg = Message()
         msg['Subject'] = '=?gb2312?b?1tDOxA==?='
+        old_charset = self._mlist.preferred_language.charset
+        self._mlist.preferred_language.charset = 'us-ascii'
         self._process(self._mlist, msg, {})
+        self._mlist.preferred_language.charset = old_charset
         decoded = decode_header(msg['Subject'])
         self.assertEqual(decoded,
                          [(b'[Test] ', 'us-ascii'),
-                          (b'\xd6\xd0\xce\xc4', 'gb2312')])
+                          (b'\xd6\xd0\xce\xc4', 'eucgb2312_cn')])
 
     def test_non_ascii_list_folded_subject(self):
         # Test a folded subject header on a list with non-ascii
         # preferred_language cset.
         msg = Message()
         msg['Subject'] = 'This is a folded subject\n header.'
-        self._mlist.preferred_language = 'xx'
+        self._mlist.preferred_language.charset = 'utf-8'
         self._process(self._mlist, msg, {})
         self.assertEqual(str(msg['subject']),
                          '[Test] This is a folded subject header.')

@@ -50,14 +50,10 @@ class Replybot:
     def process(self, mlist, msg, msgdata):
         """See `IHandler`."""
         # There are several cases where the replybot is short-circuited:
-        # * No valid sender address
         # * the original message has an "X-Ack: No" header
         # * the message has a Precedence header with values bulk, junk, or
         #   list, and there's no explicit "X-Ack: yes" header
         # * the message metadata has a true 'noack' key
-        sender = msg.sender
-        if not sender:
-            return
         ack = msg.get('x-ack', '').lower()
         if ack == 'no' or msgdata.get('noack'):
             return
@@ -90,9 +86,9 @@ class Replybot:
         # header (useful for debugging).
         response_set = IAutoResponseSet(mlist)
         user_manager = getUtility(IUserManager)
-        address = user_manager.get_address(sender)
+        address = user_manager.get_address(msg.sender)
         if address is None:
-            address = user_manager.create_address(sender)
+            address = user_manager.create_address(msg.sender)
         grace_period = mlist.autoresponse_grace_period
         if grace_period > ALWAYS_REPLY and ack != 'yes':
             last = response_set.last_response(address, response_type)
@@ -113,7 +109,7 @@ class Replybot:
             )
         # Interpolation and Wrap the response text.
         text = wrap(expand(response_text, mlist, d))
-        outmsg = UserNotification(sender, mlist.owner_address,
+        outmsg = UserNotification(msg.sender, mlist.owner_address,
                                   subject, text, mlist.preferred_language)
         outmsg['X-Mailer'] = _('The Mailman Replybot')
         # prevent recursions and mail loops!

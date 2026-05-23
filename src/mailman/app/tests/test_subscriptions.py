@@ -22,7 +22,6 @@ import unittest
 
 from contextlib import suppress
 from datetime import datetime
-from lazr.config import as_timedelta
 from mailman.app.lifecycle import create_list
 from mailman.app.membership import delete_member
 from mailman.app.subscriptions import SubscriptionWorkflow
@@ -40,6 +39,7 @@ from mailman.interfaces.member import (
 from mailman.interfaces.pending import IPendings
 from mailman.interfaces.subscriptions import ISubscriptionManager, TokenOwner
 from mailman.interfaces.usermanager import IUserManager
+from mailman.utilities.lazr.config import as_timedelta
 from mailman.testing.helpers import (
     configuration,
     get_queue_messages,

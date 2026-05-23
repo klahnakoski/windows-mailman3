@@ -17,7 +17,6 @@
 
 """Mailing list configuration via REST API."""
 
-from lazr.config import as_boolean, as_timedelta
 from mailman.config import config
 from mailman.interfaces.action import Action, FilterAction
 from mailman.interfaces.archiver import ArchivePolicy
@@ -35,6 +34,7 @@ from mailman.interfaces.mailinglist import (
 )
 from mailman.interfaces.nntp import NewsgroupModeration
 from mailman.interfaces.template import ITemplateManager
+from mailman.utilities.lazr.config import as_boolean, as_timedelta
 from mailman.model.roster import RosterVisibility
 from mailman.rest.helpers import (
     bad_request,

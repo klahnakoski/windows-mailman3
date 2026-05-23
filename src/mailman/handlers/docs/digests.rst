@@ -86,7 +86,8 @@ actually crafted by the handler.
     >>> mlist.digest_size_threshold = 1
     >>> mlist.volume = 2
     >>> mlist.next_digest_number = 10
-    >>> digest_path = os.path.join(mlist.data_path, 'digest.mmdf')
+    >>> from mailman.utilities.filesystem import File, open
+    >>> digest_path = File(mlist.data_path, 'digest.mmdf')
     >>> size = 0
     >>> for msg in message_factory:
     ...     process(mlist, msg, {})

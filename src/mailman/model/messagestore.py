@@ -27,7 +27,7 @@ from mailman.database.transaction import dbconnection
 from mailman.interfaces.messages import IMessageStore
 from mailman.model.message import Message
 from mailman.utilities.email import add_message_hash
-from mailman.utilities.filesystem import makedirs, safe_remove
+from mailman.utilities.filesystem import open, safe_remove
 from public import public
 from zope.interface import implementer
 
@@ -88,7 +88,7 @@ class MessageStore:
             except IOError as error:
                 if error.errno != errno.ENOENT:
                     raise
-            makedirs(os.path.dirname(path))
+            # File(os.path.dirname(path)).makedirs()
         return hash32
 
     @dbconnection

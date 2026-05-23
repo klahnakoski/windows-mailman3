@@ -24,7 +24,6 @@ import logging
 from email.mime.message import MIMEMessage
 from email.mime.text import MIMEText
 from email.utils import parseaddr
-from lazr.config import as_timedelta
 from mailman.config import config
 from mailman.core.i18n import _
 from mailman.email.message import OwnerNotification, UserNotification
@@ -33,6 +32,7 @@ from mailman.interfaces.listmanager import IListManager
 from mailman.interfaces.pending import IPendable, IPendings
 from mailman.interfaces.subscriptions import ISubscriptionService
 from mailman.interfaces.template import ITemplateLoader
+from mailman.utilities.lazr.config import as_timedelta
 from mailman.utilities.email import split_email
 from mailman.utilities.string import expand, oneline, wrap
 from public import public
@@ -84,10 +84,7 @@ def bounce_message(mlist, msg, error=None):
     # BAW: Be sure you set the type before trying to attach, or you'll get
     # a MultipartConversionError.
     bmsg.set_type('multipart/mixed')
-    try:
-        txt = MIMEText(notice, _charset=mlist.preferred_language.charset)
-    except UnicodeError:
-        txt = MIMEText(notice, _charset='utf-8')
+    txt = MIMEText(notice, _charset=mlist.preferred_language.charset)
     bmsg.attach(txt)
     bmsg.attach(MIMEMessage(msg))
     bmsg.send(mlist)

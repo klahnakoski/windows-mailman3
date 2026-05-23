@@ -2,6 +2,8 @@
 Starting and stopping Mailman
 =============================
 
+.. unix-only
+
 The Mailman daemon processes can be started and stopped from the command
 line.
 

@@ -24,7 +24,7 @@ from mailman.app.lifecycle import create_list
 from mailman.commands.cli_delmembers import delmembers
 from mailman.testing.helpers import get_queue_messages, subscribe
 from mailman.testing.layers import ConfigLayer
-from tempfile import NamedTemporaryFile
+from mailman.testing.tempfile import NamedTemporaryFile
 
 
 class TestCLIDelMembers(unittest.TestCase):

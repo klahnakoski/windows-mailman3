@@ -22,6 +22,7 @@ import errno
 
 from mailman.core.i18n import _
 from mailman.interfaces.handler import IHandler
+from mailman.utilities.filesystem import open
 from public import public
 from zope.interface import implementer
 

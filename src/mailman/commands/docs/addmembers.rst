@@ -51,9 +51,10 @@ need a file containing email addresses and optional display names that can be
 parsed by ``email.utils.parseaddr()``.
 ::
 
-    >>> from tempfile import NamedTemporaryFile
+    >>> from mailman.testing.tempfile import NamedTemporaryFile
     >>> filename = cleanups.enter_context(NamedTemporaryFile()).name
-    >>> from mailman.app.lifecycle import create_list    
+    >>> from mailman.app.lifecycle import create_list
+    >>> from mailman.utilities.filesystem import open
     >>> bee = create_list('bee@example.com')
     >>> with open(filename, 'w', encoding='utf-8') as fp:
     ...     print("""\

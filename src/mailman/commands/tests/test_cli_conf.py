@@ -23,7 +23,8 @@ from click.testing import CliRunner
 from mailman.commands.cli_conf import conf
 from mailman.config import config
 from mailman.testing.layers import ConfigLayer
-from tempfile import NamedTemporaryFile
+from mailman.testing.tempfile import NamedTemporaryFile
+from mailman.utilities.filesystem import open
 
 
 class TestConf(unittest.TestCase):

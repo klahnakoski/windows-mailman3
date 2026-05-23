@@ -25,12 +25,12 @@ import nntplib
 import datetime
 
 from email import errors, message_from_bytes
-from flufl.lock import Lock, TimeOutError
 from mailman.config import config
 from mailman.core.i18n import _
 from mailman.email import message
 from mailman.interfaces.command import ICLISubCommand
 from mailman.interfaces.listmanager import IListManager
+from mailman.lock import Lock, TimeOutError
 from mailman.utilities.options import I18nCommand
 from public import public
 from zope.component import getUtility

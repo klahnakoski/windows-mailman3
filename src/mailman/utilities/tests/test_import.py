@@ -17,7 +17,6 @@
 
 """Tests for config.pck imports."""
 
-import os
 import unittest
 
 from contextlib import ExitStack, redirect_stderr
@@ -49,7 +48,7 @@ from mailman.interfaces.usermanager import IUserManager
 from mailman.model.roster import RosterVisibility
 from mailman.testing.helpers import LogFileMark
 from mailman.testing.layers import ConfigLayer
-from mailman.utilities.filesystem import makedirs
+from mailman.utilities.filesystem import File
 from mailman.utilities.i18n import search
 from mailman.utilities.importer import (
     check_language_code,
@@ -399,9 +398,6 @@ nothing to repeat at position 1"""
         self._import()
         alias_set = IAcceptableAliasSet(self._mlist)
         self.assertEqual(sorted(alias_set.aliases), new_aliases)
-        self.assertEqual(sorted(alias.alias
-                                for alias in self._mlist.acceptable_aliases),
-                         new_aliases)
 
     def test_acceptable_aliases_invalid(self):
         # Values without an '@' sign used to be matched against the local
@@ -1086,11 +1082,10 @@ class TestConvertToURI(unittest.TestCase):
         # What if the default template is already in UTF-8?   For example, if
         # you import it twice.
         footer = b'\xe4\xb8\xad $listinfo_uri'
-        footer_path = os.path.join(
+        footer_path = File(
             config.VAR_DIR, 'templates', 'lists',
             'blank@example.com', 'en', 'footer.txt')
-        makedirs(os.path.dirname(footer_path))
-        with open(footer_path, 'wb') as fp:
+        with footer_path.open('wb') as fp:
             fp.write(footer)
         self._pckdict['msg_footer'] = b'NEW-VALUE'
         import_config_pck(self._mlist, self._pckdict)

@@ -1,4 +1,0 @@
-Milis $listname memiliki $count permintaan moderasi yang menunggu.
-
-$data
-Mohon tangani ini sesegera mungkin.

@@ -27,6 +27,7 @@ from mailman.bin.mailman import main
 from mailman.config import config
 from mailman.database.transaction import transaction
 from mailman.interfaces.command import ICLISubCommand
+from mailman.testing.helpers import skipWindows
 from mailman.testing.layers import ConfigLayer
 from mailman.utilities.datetime import now
 from mailman.utilities.modules import add_components
@@ -37,6 +38,7 @@ def mock_euid():
     return 0
 
 
+@skipWindows
 class TestMailmanCommand(unittest.TestCase):
     layer = ConfigLayer
 

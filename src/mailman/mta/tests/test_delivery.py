@@ -19,7 +19,6 @@
 
 import os
 import shutil
-import tempfile
 import unittest
 
 from email.header import make_header
@@ -35,6 +34,8 @@ from mailman.testing.helpers import (
     subscribe,
 )
 from mailman.testing.layers import ConfigLayer, SMTPLayer
+from mailman.testing.tempfile import NamedTemporaryFile, TemporaryDirectory
+from mailman.utilities.filesystem import File, open
 from mailman.utilities.modules import find_name
 from unittest.mock import patch
 from zope.component import getUtility
@@ -83,11 +84,10 @@ Subject: test
 
 """)
         # Set up a personalized footer for decoration.
-        self._template_dir = tempfile.mkdtemp()
+        self._template_dir = TemporaryDirectory()
         self.addCleanup(shutil.rmtree, self._template_dir)
         path = os.path.join(self._template_dir,
                             'site', 'en', 'member-footer.txt')
-        os.makedirs(os.path.dirname(path))
         with open(path, 'w', encoding='utf-8') as fp:
             print("""\
 address  : $user_address
@@ -123,7 +123,7 @@ name     : $user_name
     def test_arc_sign_called_individual(self):
         # Delivery with arc_sign enabled should call arc_sign.
         msgdata = dict(recipients=['anne@example.org'])
-        keyfile = tempfile.NamedTemporaryFile(delete=True)
+        keyfile = NamedTemporaryFile('wb', delete=False, suffix='.pem')
         keyfile.write(b"""-----BEGIN RSA PRIVATE KEY-----
 MIICXQIBAAKBgQDkHlOQoBTzWRiGs5V6NpP3idY6Wk08a5qhdR6wy5bdOKb2jLQi
 Y/J16JYi0Qvx/byYzCNb3W91y3FutACDfzwQ/BC/e/8uBsCR+yz1Lxj+PL6lHvqM
@@ -141,6 +141,8 @@ uEzxBDAr518Z8VFbR41in3W4Y3yCDgQlLlcETrS+zYcL
 -----END RSA PRIVATE KEY-----
 """)
         keyfile.flush()
+        keyfile.close()
+        self.addCleanup(os.unlink, keyfile.name)
         config.push('arc', """
         [ARC]
         enabled: yes
@@ -296,11 +298,10 @@ Subject: test
 
 """)
         # Set up a footer for decoration.
-        self._template_dir = tempfile.mkdtemp()
+        self._template_dir = TemporaryDirectory()
         self.addCleanup(shutil.rmtree, self._template_dir)
         path = os.path.join(self._template_dir,
                             'site', 'en', 'member-footer.txt')
-        os.makedirs(os.path.dirname(path))
         with open(path, 'w', encoding='utf-8') as fp:
             print("""\
 list: $display_name
@@ -343,7 +344,7 @@ Footer
     def test_arc_sign_called_bulk(self):
         # Delivery with arc_sign enabled should call arc_sign.
         msgdata = dict(recipients=['anne@example.org'])
-        keyfile = tempfile.NamedTemporaryFile(delete=True)
+        keyfile = NamedTemporaryFile('wb')
         keyfile.write(b"""-----BEGIN RSA PRIVATE KEY-----
 MIICXQIBAAKBgQDkHlOQoBTzWRiGs5V6NpP3idY6Wk08a5qhdR6wy5bdOKb2jLQi
 Y/J16JYi0Qvx/byYzCNb3W91y3FutACDfzwQ/BC/e/8uBsCR+yz1Lxj+PL6lHvqM
@@ -466,7 +467,7 @@ Message-ID:
         msgdata = dict(recipients=['test@example.com', 'bart@example.org'])
         self._mlist.personalize = Personalization.none
         msgdata['recipients'] = ['test@example.com', 'bart@example.org']
-        self._msg['Cc'] = make_header([('bart@example.org', None)])
+        self._msg['CC'] = make_header([('bart@example.org', None)])
         config.push('logging', """
         [logging.smtp]
         success: post for $recip recips

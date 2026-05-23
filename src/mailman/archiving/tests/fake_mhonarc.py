@@ -20,6 +20,7 @@
 import sys
 
 from email import message_from_string
+from mailman.utilities.filesystem import open
 
 
 def main():

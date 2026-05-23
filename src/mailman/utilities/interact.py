@@ -23,6 +23,7 @@ import code
 
 from contextlib import suppress
 from inspect import signature
+from mailman.utilities.filesystem import open
 from public import public
 
 

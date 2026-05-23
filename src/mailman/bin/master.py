@@ -27,12 +27,13 @@ import multiprocessing
 
 from datetime import timedelta
 from enum import Enum
-from flufl.lock import Lock, NotLockedError, TimeOutError
-from lazr.config import as_boolean
 from mailman.config import config
 from mailman.core.i18n import _
 from mailman.core.initialize import initialize
 from mailman.core.logging import reopen
+from mailman.utilities.lazr.config import as_boolean
+from mailman.lock import Lock, NotLockedError, TimeOutError
+from mailman.utilities.filesystem import open
 from mailman.utilities.options import I18nCommand, validate_runner_spec
 from mailman.version import MAILMAN_VERSION_FULL
 from public import public
@@ -42,6 +43,12 @@ DOT = '.'
 LOCK_LIFETIME = timedelta(days=1, hours=6)
 SECONDS_IN_A_DAY = 86400
 SUBPROC_START_WAIT = timedelta(seconds=20)
+
+# Path to the command file used for cross-platform IPC between the CLI
+# commands (stop/restart/reopen) and the master process.
+def _command_file():
+    return os.path.join(config.DATA_DIR, 'master-command')
+
 
 # Environment variables to forward into subprocesses.
 #

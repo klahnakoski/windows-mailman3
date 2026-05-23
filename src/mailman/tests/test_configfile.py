@@ -26,6 +26,7 @@ import unittest
 from contextlib import contextmanager
 from mailman.core.initialize import search_for_configuration_file
 from mailman.testing.helpers import hackenv
+from mailman.utilities.filesystem import File
 
 
 # Here are a couple of context managers that make our tests easier to read.
@@ -79,8 +80,13 @@ class TestConfigFileBase(unittest.TestCase):
             os.environ['MAILMAN_CONFIG_FILE'] = self.mailman_config_file
 
     def _make_fake(self, path):
-        if path.startswith('/'):
-            path = path[1:]
+        # Turn an absolute path (Unix or Windows) into a relative one
+        # anchored under self._root.
+        if os.path.isabs(path):
+            # os.path.splitdrive handles both 'C:\foo' and '/foo'
+            drive, tail = os.path.splitdrive(path)
+            # Remove leading separator(s) so os.path.join works correctly.
+            path = tail.lstrip(os.sep).lstrip('/')
         return os.path.join(self._root, path)
 
 
@@ -97,19 +103,22 @@ class TestConfigFileSearch(TestConfigFileBase):
             os.path.join(fake_testdir, 'mailman.cfg'))
         with fakedirs(fake_testdir):
             # Write a mostly empty configuration file.
-            with open(os.path.join(fake_testdir, 'mailman.cfg'), 'w') as fp:
+            with File(os.path.join(fake_testdir, 'mailman.cfg')).open('w') as fp:
                 print('# Fake mailman.cfg file', file=fp)
             with chdir(fake_testdir):
                 # Sometimes symlinks bite us (eg. OS X /var -> /private/var).
                 found = os.path.realpath(search_for_configuration_file())
                 self.assertEqual(found, config_file)
 
-
 class TestConfigFileSearchWithChroot(TestConfigFileBase):
     """Like `TestConfigFileSearch` but with a special os.path.exists()."""
 
     def setUp(self):
         TestConfigFileBase.setUp(self)
+        # Change to the temp root so relative-path checks (e.g.
+        # ./var/etc/mailman.cfg) don't accidentally find real project files.
+        self._old_cwd = os.getcwd()
+        os.chdir(self._root)
         # We can't actually call os.chroot() unless we're root.  Neither can
         # we write to say /etc/mailman.cfg without being root (of course we
         # wouldn't want to even if we could).  The easiest way to fake a file
@@ -123,6 +132,7 @@ class TestConfigFileSearchWithChroot(TestConfigFileBase):
 
     def tearDown(self):
         os.path.exists = self._os_path_exists
+        os.chdir(self._old_cwd)
         TestConfigFileBase.tearDown(self)
 
     def test_baseline(self):
@@ -143,10 +153,11 @@ class TestConfigFileSearchWithChroot(TestConfigFileBase):
         config_file = os.path.join(fake_home, 'mailman.cfg')
         with fakedirs(fake_testdir):
             # Write a mostly empty configuration file.
-            with open(os.path.join(fake_testdir, 'mailman.cfg'), 'w') as fp:
+            with File(os.path.join(fake_testdir, 'mailman.cfg')).open('w') as fp:
                 print('# Fake mailman.cfg file', file=fp)
             with hackenv('MAILMAN_CONFIG_FILE', config_file):
-                self.assertEqual(search_for_configuration_file(), config_file)
+                self.assertEqual(search_for_configuration_file(),
+                                 os.path.abspath(config_file))
 
     def test_home_dot_file(self):
         # Test ~/.mailman.cfg
@@ -155,10 +166,11 @@ class TestConfigFileSearchWithChroot(TestConfigFileBase):
         config_file = os.path.join(fake_home, '.mailman.cfg')
         with fakedirs(fake_testdir):
             # Write a mostly empty configuration file.
-            with open(os.path.join(fake_testdir, '.mailman.cfg'), 'w') as fp:
+            with File(os.path.join(fake_testdir, '.mailman.cfg')).open('w') as fp:
                 print('# Fake mailman.cfg file', file=fp)
             with hackenv('HOME', '/home/neil'):
-                self.assertEqual(search_for_configuration_file(), config_file)
+                self.assertEqual(search_for_configuration_file(),
+                                 os.path.abspath(config_file))
 
     def test_etc_file(self):
         # Test /etc/mailman.cfg
@@ -167,9 +179,10 @@ class TestConfigFileSearchWithChroot(TestConfigFileBase):
         config_file = os.path.join(fake_etc, 'mailman.cfg')
         with fakedirs(fake_testdir):
             # Write a mostly empty configuration file.
-            with open(os.path.join(fake_testdir, 'mailman.cfg'), 'w') as fp:
+            with File(os.path.join(fake_testdir, 'mailman.cfg')).open('w') as fp:
                 print('# Fake mailman.cfg file', file=fp)
-            self.assertEqual(search_for_configuration_file(), config_file)
+            self.assertEqual(search_for_configuration_file(),
+                             os.path.abspath(config_file))
 
     def test_etc_mailman3_file(self):
         # Test /etc/mailman3/mailman.cfg
@@ -178,9 +191,10 @@ class TestConfigFileSearchWithChroot(TestConfigFileBase):
         config_file = os.path.join(fake_etc, 'mailman.cfg')
         with fakedirs(fake_testdir):
             # Write a mostly empty configuration file.
-            with open(os.path.join(fake_testdir, 'mailman.cfg'), 'w') as fp:
+            with File(os.path.join(fake_testdir, 'mailman.cfg')).open('w') as fp:
                 print('# Fake mailman.cfg file', file=fp)
-            self.assertEqual(search_for_configuration_file(), config_file)
+            self.assertEqual(search_for_configuration_file(),
+                             os.path.abspath(config_file))
 
     def test_sibling_directory(self):
         # Test $argv0/../../etc/mailman.cfg
@@ -196,4 +210,4 @@ class TestConfigFileSearchWithChroot(TestConfigFileBase):
                 with open(config_file, 'w') as fp:
                     print('# Fake mailman.cfg file', file=fp)
                 self.assertEqual(search_for_configuration_file(),
-                                 fake_config_file)
+                                 os.path.abspath(fake_config_file))

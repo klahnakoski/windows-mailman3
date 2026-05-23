@@ -18,12 +18,12 @@
 """The maximum message size rule."""
 
 from copy import deepcopy
-from lazr.config import as_boolean
 from mailman.config import config
 from mailman.core.i18n import _
 from mailman.handlers.mime_delete import process
 from mailman.interfaces.pipeline import DiscardMessage, RejectMessage
 from mailman.interfaces.rules import IRule
+from mailman.utilities.lazr.config import as_boolean
 from public import public
 from zope.interface import implementer
 

@@ -21,7 +21,6 @@ import os
 import logging
 
 from datetime import datetime, timedelta
-from lazr.config import as_timedelta
 from mailman.config import config
 from mailman.core.runner import Runner
 from mailman.database.transaction import dbconnection, transactional
@@ -31,6 +30,7 @@ from mailman.interfaces.messages import IMessageStore
 from mailman.interfaces.pending import IPendings
 from mailman.interfaces.requests import IListRequests, RequestType
 from mailman.interfaces.workflow import IWorkflowStateManager
+from mailman.utilities.lazr.config import as_timedelta
 from mailman.model.bounce import BounceEvent
 from mailman.model.requests import _Request
 from mailman.utilities.datetime import now

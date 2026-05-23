@@ -28,8 +28,8 @@ from email.header import Header
 from email.message import Message
 from enum import Enum
 from functools import partial
-from lazr.config import as_boolean
 from mailman.config import config
+from mailman.utilities.lazr.config import as_boolean
 from pprint import pformat
 from public import public
 

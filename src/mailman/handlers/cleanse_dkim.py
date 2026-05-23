@@ -25,10 +25,10 @@ and it will also give the MTA the opportunity to regenerate valid keys
 originating at the Mailman server for the outgoing message.
 """
 
-from lazr.config import as_boolean
 from mailman.config import config
 from mailman.core.i18n import _
 from mailman.interfaces.handler import IHandler
+from mailman.utilities.lazr.config import as_boolean
 from public import public
 from zope.interface import implementer
 

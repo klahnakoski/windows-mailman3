@@ -25,9 +25,9 @@ import smtplib
 
 from contextlib import suppress
 from email.message import Message
-from lazr.config import as_boolean
 from mailman.config import config
 from mailman.interfaces.configuration import InvalidConfigurationError
+from mailman.utilities.lazr.config import as_boolean
 from public import public
 
 

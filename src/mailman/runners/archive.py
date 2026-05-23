@@ -22,11 +22,11 @@ import logging
 
 from datetime import datetime
 from email.utils import mktime_tz, parsedate_tz
-from lazr.config import as_timedelta
 from mailman.config import config
 from mailman.core.runner import Runner
 from mailman.interfaces.archiver import ClobberDate
 from mailman.interfaces.mailinglist import IListArchiverSet
+from mailman.utilities.lazr.config import as_timedelta
 from mailman.utilities.datetime import now, RFC822_DATE_FMT
 from public import public
 

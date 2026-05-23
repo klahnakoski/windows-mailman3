@@ -19,10 +19,10 @@
 
 import click
 
-from lazr.config._config import Section
 from mailman.config import config
 from mailman.core.i18n import _
 from mailman.interfaces.command import ICLISubCommand
+from mailman.utilities.lazr.config._config import Section
 from mailman.utilities.options import I18nCommand
 from public import public
 from zope.interface import implementer

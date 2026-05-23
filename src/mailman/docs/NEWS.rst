@@ -51,8 +51,6 @@ Bugs fixed
   message.  (:issue:`514`)
 * The ``mailman import21`` command does not add duplicate entry to
   the ``*_these_nonmembers`` lists. (:issue:`1213`)
-* The ``mailman import21`` rounds down timedelta to 999999 days when
-  ``OverflowError``. (:issue:`1275`)
 * Unfold address containing headers before parsing in implicit_dest.
   (:issue:`1229`)
 * User-facing ``UserNotification`` messages now use the list owner address in
@@ -72,15 +70,6 @@ Bugs fixed
   versus at the list level. (:issue:`705`)
 * Allow configuration of LMTP message size limit via the variable
   ``lmtp_max_size`` in config section ``mta``.
-* Do not call non-reentrant functions in the signal handler. (:issue:`1258`)
-* Stop runner process gracefully not to shunt a processing message.
-  (:issue:`1273`)
-* The replybot handler ignores messages without a valid sender address instead
-  of shunting them.  (:issue:`509`, :issue:`525`)
-* The global ``mitigate_owner_mail`` setting is now properly respected even if
-  a list is set to mitigate DMARC unconditionally. (:issue:`1277`)
-* Reject notices with non-ASCII text on ``us-ascii`` lists now fall back to
-  UTF-8 instead of causing messages to be shunted.  (:issue:`1268`)
 
 New Features
 ------------
@@ -874,7 +863,7 @@ Features
 Bugs
 ----
 * A list member with ``receive_list_copy`` set to ``False`` who is addressed in
-  ``Cc`` will now be removed from ``Cc`` even if this results in no ``Cc``.
+  ``CC`` will now be removed from ``CC`` even if this results in no ``CC``.
   (:issue:`575`)
 * ``X-Mailman-Approved-At`` header now has correct timezone.  (:issue:`584`)
 * A spurious ``invalid FilterAction: discard. Treating as discard`` log

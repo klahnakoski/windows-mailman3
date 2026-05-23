@@ -24,6 +24,7 @@ distributions.  doctest discovery currently requires file system traversal.
 import os
 import sys
 import shlex
+import unittest
 
 from click.testing import CliRunner
 from contextlib import ExitStack
@@ -203,9 +204,9 @@ def run_mailman(args, **overrides):
     env = os.environ.copy()
     env.update(overrides)
     run_args = [exe]
-    # When running tests as root, just add the flag to force run mailman
-    # command without errors.
-    if os.geteuid() == 0:
+    # When running tests as root (Unix only), add the flag to force run
+    # mailman command without errors.
+    if getattr(os, 'geteuid', lambda: 1)() == 0:
         run_args.append('--run-as-root')
     run_args.extend(args)
     proc = run(
@@ -216,6 +217,11 @@ def run_mailman(args, **overrides):
 @public
 def setup(testobj):
     """Test setup."""
+    # If the RST file contains the marker '.. unix-only', skip it on Windows.
+    if sys.platform == 'win32':
+        docstring = getattr(testobj, 'docstring', '') or ''
+        if '.. unix-only' in docstring:
+            raise unittest.SkipTest('Unix-only doctest, skipped on Windows')
     # In general, I don't like adding convenience functions, since I think
     # doctests should do the imports themselves.  It makes for better
     # documentation that way.  However, a few are really useful, or help to

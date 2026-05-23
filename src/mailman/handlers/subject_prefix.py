@@ -35,7 +35,7 @@ EMPTYSTRING = ''
 def ascii_header(mlist, msgdata, subject, prefix, prefix_pattern, ws):
     if mlist.preferred_language.charset not in ASCII_CHARSETS:
         return None
-    for chunk, charset in decode_header(subject):
+    for chunk, charset in decode_header(subject.encode()):
         if charset not in ASCII_CHARSETS:
             return None
     subject_text = EMPTYSTRING.join(str(subject).splitlines())
@@ -67,7 +67,7 @@ def ascii_header(mlist, msgdata, subject, prefix, prefix_pattern, ws):
 def all_same_charset(mlist, msgdata, subject, prefix, prefix_pattern, ws):
     list_charset = mlist.preferred_language.charset
     chunks = []
-    for chunk, charset in decode_header(subject):
+    for chunk, charset in decode_header(subject.encode()):
         if charset is None:
             charset = 'us-ascii'
         if isinstance(chunk, str):
@@ -113,7 +113,7 @@ def all_same_charset(mlist, msgdata, subject, prefix, prefix_pattern, ws):
 
 def mixed_charsets(mlist, msgdata, subject, prefix, prefix_pattern, ws):
     list_charset = mlist.preferred_language.charset
-    chunks = decode_header(subject)
+    chunks = decode_header(subject.encode())
     # This code was:
     # if len(chunks) == 0:
     #     with _.using(mlist.preferred_language.code):

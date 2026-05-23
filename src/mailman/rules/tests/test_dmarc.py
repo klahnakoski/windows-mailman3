@@ -28,10 +28,10 @@ from dns.resolver import NoAnswer, NoNameservers, NXDOMAIN
 from email import message_from_bytes
 from http.server import BaseHTTPRequestHandler, HTTPServer
 from importlib.resources import path
-from lazr.config import as_timedelta
 from mailman.app.lifecycle import create_list
 from mailman.config import config
 from mailman.interfaces.mailinglist import DMARCMitigateAction
+from mailman.utilities.lazr.config import as_timedelta
 from mailman.rules import dmarc
 from mailman.testing.helpers import (
     configuration,
@@ -41,6 +41,7 @@ from mailman.testing.helpers import (
 )
 from mailman.testing.layers import ConfigLayer
 from mailman.utilities.datetime import now
+from mailman.utilities.filesystem import open
 from public import public
 from unittest import TestCase
 from unittest.mock import patch

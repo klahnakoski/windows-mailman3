@@ -56,6 +56,7 @@ key, along with the names of the corresponding sections.
     [logging.smtp] path: smtp.log
     [logging.subscribe] path: mailman.log
     [logging.task] path: mailman.log
+    [logging.template] path: mailman.log
     [logging.vette] path: mailman.log
     [runner.archive] path: $QUEUE_DIR/$name
     [runner.bad] path: $QUEUE_DIR/$name
@@ -64,6 +65,7 @@ key, along with the names of the corresponding sections.
     [runner.digest] path: $QUEUE_DIR/$name
     [runner.in] path: $QUEUE_DIR/$name
     [runner.lmtp] path:
+    [runner.master] path: $QUEUE_DIR/$name
     [runner.nntp] path: $QUEUE_DIR/$name
     [runner.out] path: $QUEUE_DIR/$name
     [runner.pipeline] path: $QUEUE_DIR/$name

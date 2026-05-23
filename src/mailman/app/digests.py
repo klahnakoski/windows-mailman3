@@ -23,6 +23,7 @@ from mailman.config import config
 from mailman.email.message import Message
 from mailman.interfaces.digests import DigestFrequency
 from mailman.utilities.datetime import now as right_now
+from mailman.utilities.filesystem import File, safe_rename
 from public import public
 
 
@@ -105,7 +106,7 @@ def maybe_send_digest_now(mlist, *, force=False):
         volume = mlist.volume
         digest_number = mlist.next_digest_number
         bump_digest_number_and_volume(mlist)
-        os.rename(mailbox_path, mailbox_dest)
+        safe_rename(mailbox_path, mailbox_dest)
         config.switchboards['digest'].enqueue(
             Message(),
             listid=mlist.list_id,

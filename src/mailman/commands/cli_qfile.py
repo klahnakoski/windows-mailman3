@@ -22,6 +22,7 @@ import pickle
 
 from mailman.core.i18n import _
 from mailman.interfaces.command import ICLISubCommand
+from mailman.utilities.filesystem import open
 from mailman.utilities.interact import interact
 from mailman.utilities.options import I18nCommand
 from pprint import PrettyPrinter

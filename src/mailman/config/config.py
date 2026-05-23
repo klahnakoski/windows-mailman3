@@ -23,9 +23,7 @@ import mailman.templates
 
 from configparser import ConfigParser
 from contextlib import ExitStack
-from flufl.lock import Lock
 from importlib.resources import path, read_text
-from lazr.config import as_boolean, ConfigSchema
 from mailman import version
 from mailman.interfaces.configuration import (
     ConfigurationUpdatedEvent,
@@ -33,7 +31,9 @@ from mailman.interfaces.configuration import (
     MissingConfigurationFileError,
 )
 from mailman.interfaces.languages import ILanguageManager
-from mailman.utilities.filesystem import makedirs
+from mailman.utilities.lazr.config import as_boolean, ConfigSchema
+from mailman.lock import Lock
+from mailman.utilities.filesystem import File, open
 from mailman.utilities.modules import call_name, expand_path
 from public import public
 from string import Template
@@ -232,10 +232,10 @@ class Configuration:
         # Ensure that all paths are normalized and made absolute.  Handle the
         # few special cases first.  Most of these are due to backward
         # compatibility.
-        self.PID_FILE = os.path.abspath(substitutions.pop('pid_file'))
+        self.PID_FILE = File(substitutions.pop('pid_file'))
         for key in substitutions:
             attribute = key.upper()
-            setattr(self, attribute, os.path.abspath(substitutions[key]))
+            setattr(self, attribute, File(substitutions[key]))
 
     @property
     def logger_configs(self):
@@ -253,7 +253,7 @@ class Configuration:
         """Create all path directories if they do not exist."""
         if self.create_paths:
             for variable, directory in self.paths.items():
-                makedirs(directory)
+                File(directory).makedirs()
             # Avoid circular imports.
             from mailman.utilities.datetime import now
 
@@ -347,7 +347,7 @@ class Configuration:
             try:
                 # Open the private key in ascii encoding to make sure it
                 # doesn't include any non-ascii characters.
-                with open(self.ARC.privkey, encoding='ascii') as fd:
+                with open(self.ARC.privkey, 'r', encoding='ascii') as fd:
                     arc_private_key = fd.read()
             except OSError as e:
                 print('[ARC] "privkey" is unreadable: ', str(e),
@@ -387,7 +387,7 @@ def load_external(path):
         resource_path = path[7:]
         package, dot, resource = resource_path.rpartition('.')
         return read_text(package, resource + '.cfg')
-    with open(path, 'r', encoding='utf-8') as fp:
+    with open(path, 'r') as fp:
         return fp.read()
 
 

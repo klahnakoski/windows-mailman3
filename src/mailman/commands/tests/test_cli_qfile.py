@@ -23,8 +23,8 @@ from click.testing import CliRunner
 from contextlib import ExitStack
 from mailman.commands.cli_qfile import qfile
 from mailman.testing.layers import ConfigLayer
+from mailman.testing.tempfile import NamedTemporaryFile
 from pickle import dump
-from tempfile import NamedTemporaryFile
 from unittest.mock import patch
 
 

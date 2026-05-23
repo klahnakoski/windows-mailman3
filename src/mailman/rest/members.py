@@ -19,7 +19,6 @@
 
 import logging
 
-from lazr.config import as_boolean
 from mailman.app.membership import add_member
 from mailman.interfaces.action import Action
 from mailman.interfaces.address import IAddress, InvalidEmailAddressError
@@ -42,6 +41,7 @@ from mailman.interfaces.subscriptions import (
 )
 from mailman.interfaces.user import IUser, UnverifiedAddressError
 from mailman.interfaces.usermanager import IUserManager
+from mailman.utilities.lazr.config import as_boolean
 from mailman.rest.helpers import (
     accepted,
     bad_request,

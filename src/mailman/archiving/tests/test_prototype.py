@@ -19,21 +19,22 @@
 
 import os
 import shutil
-import tempfile
 import unittest
 import threading
 
 from email import message_from_file
-from flufl.lock import Lock
 from mailman.app.lifecycle import create_list
 from mailman.archiving.prototype import Prototype
 from mailman.config import config
 from mailman.database.transaction import transaction
+from mailman.lock import Lock
 from mailman.testing.helpers import (
     LogFileMark,
+    skipWindows,
     specialized_message_from_string as mfs,
 )
 from mailman.testing.layers import ConfigLayer
+from mailman.testing.tempfile import TemporaryDirectory
 from mailman.utilities.email import add_message_hash
 
 
@@ -58,7 +59,7 @@ but the water deserves to be swum.
             self._mlist = create_list('test@example.com')
         # Set up a temporary directory for the prototype archiver so that it's
         # easier to clean up.
-        self._tempdir = tempfile.mkdtemp()
+        self._tempdir = TemporaryDirectory()
         self.addCleanup(shutil.rmtree, self._tempdir)
         config.push('prototype', """
         [paths.testing]
@@ -74,7 +75,7 @@ but the water deserves to be swum.
                 os.path.join('prototype', self._mlist.fqdn_listname, 'new'),
                 os.path.join('prototype', self._mlist.fqdn_listname, 'tmp'),
                 )))
-        self._expected_dir_structure.add(config.ARCHIVE_DIR)
+        self._expected_dir_structure.add(str(config.ARCHIVE_DIR))
 
     def _find(self, path):
         all_filenames = set()
@@ -125,6 +126,7 @@ but the water deserves to be swum.
         Prototype.archive_message(self._mlist, self._msg)
         self.assertEqual(len(os.listdir(new_dir)), 2)
 
+    @skipWindows
     def test_archive_lock_used(self):
         # Test that locking the maildir when adding works as a failure here
         # could mean we lose mail.

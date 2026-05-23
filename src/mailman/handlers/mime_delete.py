@@ -26,22 +26,22 @@ contents.
 
 import os
 import copy
-import shutil
 import logging
-import tempfile
 
 from contextlib import ExitStack, suppress
 from email.iterators import typed_subpart_iterator
 from email.mime.message import MIMEMessage
 from email.mime.text import MIMEText
 from itertools import count
-from lazr.config import as_boolean
 from mailman.config import config
 from mailman.core.i18n import _
 from mailman.email.message import OwnerNotification
 from mailman.interfaces.action import FilterAction
 from mailman.interfaces.handler import IHandler
 from mailman.interfaces.pipeline import DiscardMessage, RejectMessage
+from mailman.utilities.lazr.config import as_boolean
+from mailman.testing.tempfile import TemporaryDirectory
+from mailman.utilities.filesystem import open
 from mailman.utilities.string import oneline
 from mailman.version import VERSION
 from public import public
@@ -355,8 +355,8 @@ def to_plaintext(msg):
     changedp = 0
     counter = count()
     with ExitStack() as resources:
-        tempdir = tempfile.mkdtemp()
-        resources.callback(shutil.rmtree, tempdir)
+        tempdir = TemporaryDirectory()
+        resources.callback(tempdir.cleanup)
         for subpart in typed_subpart_iterator(msg, 'text', 'html'):
             filename = os.path.join(tempdir, '{}.html'.format(next(counter)))
             cset = subpart.get_content_charset('us-ascii')
@@ -366,8 +366,8 @@ def to_plaintext(msg):
             template = Template(config.mailman.html_to_plain_text_command)
             command = template.safe_substitute(filename=filename).split()
             try:
-                stdout = check_output(command, universal_newlines=True)
-            except (CalledProcessError, FileNotFoundError, PermissionError):
+                stdout = check_output(command, universal_newlines=True, encoding='utf-8')
+            except (CalledProcessError, OSError):
                 log.exception('HTML -> text/plain command error')
             else:
                 # Replace the payload of the subpart with the converted text

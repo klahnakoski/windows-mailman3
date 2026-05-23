@@ -20,8 +20,10 @@
 import unittest
 
 from mailman.core.logging import ReopenableFileHandler
+from mailman.testing.helpers import skipWindows
 
 
+@skipWindows
 class TestRunner(unittest.TestCase):
 
     def test_opening_character_device(self):

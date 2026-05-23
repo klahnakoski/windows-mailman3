@@ -17,15 +17,17 @@
 
 """Creation/deletion hooks for the Postfix MTA."""
 
-import os
 import logging
+import os
+import subprocess
 
 from collections import defaultdict
 from contextlib import contextmanager
-from flufl.lock import Lock
+from dataclasses import dataclass, field
 from functools import lru_cache
 from mailman.config import config
 from mailman.config.config import external_configuration
+from mailman.lock import Lock
 from mailman.interfaces.domain import IDomainManager
 from mailman.interfaces.listmanager import IListManager
 from mailman.interfaces.mta import (
@@ -33,6 +35,7 @@ from mailman.interfaces.mta import (
     IMailTransportAgentLifecycle,
 )
 from mailman.utilities.datetime import now
+from mailman.utilities.filesystem import File
 from operator import attrgetter
 from public import public
 from zope.component import getUtility
@@ -48,15 +51,15 @@ NL = '\n'
 @contextmanager
 def atomic(path):
     # Write a new file and then atomically rename it.
-    new_path = path + '.new'
+    new_path = File(str(path) + '.new')
     try:
         with open(new_path, 'w', encoding='utf-8') as fp:
             yield fp
-    except:                                      # noqa: E722 pragma: nocover
-        os.remove(new_path)
+    except:                         # pragma: nocover
+        new_path.remove()
         raise
     else:
-        os.rename(new_path, path)
+        new_path.rename(path)
 
 
 def _get_alias_domain(domain):
@@ -119,20 +122,20 @@ class LMTP:
         # Acquire a lock file to prevent other processes from racing us here.
         if directory is None:
             directory = config.DATA_DIR
-        lock_file = os.path.join(config.LOCK_DIR, 'mta')
+        lock_file = File(config.LOCK_DIR, 'mta')
         with Lock(lock_file):
-            lmtp_path = os.path.join(directory, 'postfix_lmtp')
+            lmtp_path = File(directory, 'postfix_lmtp')
             with atomic(lmtp_path) as fp:
                 self._generate_lmtp_file(fp)
-            domains_path = os.path.join(directory, 'postfix_domains')
+            domains_path = File(directory, 'postfix_domains')
             with atomic(domains_path) as fp:
                 self._generate_domains_file(fp)
-            vmap_path = os.path.join(directory, 'postfix_vmap')
+            vmap_path = File(directory, 'postfix_vmap')
             with atomic(vmap_path) as fp:
                 vmap = self._generate_vmap_file(fp)
             if not vmap:
                 # If we didn't write anything, remove the file.
-                os.remove(vmap_path)
+                vmap_path.remove()
             # If the transport_file_type is 'hash' then run the postmap command
             # on newly generated file to convert them in to hash table like
             # Postfix wants.

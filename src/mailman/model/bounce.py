@@ -21,7 +21,6 @@ import logging
 import datetime
 
 from email.utils import make_msgid
-from lazr.config import as_boolean, as_timedelta
 from mailman.app.bounces import _ProbePendable, send_probe
 from mailman.app.membership import delete_member
 from mailman.app.notifications import (
@@ -48,6 +47,7 @@ from mailman.interfaces.listmanager import IListManager
 from mailman.interfaces.member import DeliveryStatus, IMembershipManager
 from mailman.interfaces.messages import IMessageStore
 from mailman.interfaces.pending import IPendings
+from mailman.utilities.lazr.config import as_boolean, as_timedelta
 from mailman.utilities.datetime import now
 from public import public
 from sqlalchemy import Boolean, Column, DateTime, Integer

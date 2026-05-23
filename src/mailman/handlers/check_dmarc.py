@@ -21,10 +21,10 @@ This handler is somewhat of a kludge. It is only for the owner pipeline,
 and it's purpose is only to check the dmarc rule for messages to the -owner
 address so dmarc mitigations can be applied to them."""
 
-from lazr.config import as_boolean
 from mailman.config import config
 from mailman.core.i18n import _
 from mailman.interfaces.handler import IHandler
+from mailman.utilities.lazr.config import as_boolean
 from mailman.rules.dmarc import DMARCMitigation
 from public import public
 from zope.interface import implementer

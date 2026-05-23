@@ -164,7 +164,7 @@ class ITemplateManager(Interface):
 # hierarchy.
 
 ALL_TEMPLATES = {
-    key: '{}.txt'.format(key)
+    key: '{}.txt'.format(key.replace(':', '_'))
     for key in {
         'domain:admin:notice:new-list',
         'list:admin:action:post',
@@ -199,8 +199,8 @@ ALL_TEMPLATES = {
 
 # These have alternate names.
 ALT_TEMPLATE_NAMES = {
-    'list:member:digest:footer': 'list:member:generic:footer.txt',
-    'list:member:regular:footer': 'list:member:generic:footer.txt',
+    'list:member:digest:footer': 'list_member_generic_footer.txt',
+    'list:member:regular:footer': 'list_member_generic_footer.txt',
     }
 
 public(ALL_TEMPLATES=ALL_TEMPLATES)

@@ -80,7 +80,8 @@ First we create a list and add a few members.
 the first example, Fred is a member who remains on the list and isn't reported.
 ::
 
-    >>> from tempfile import NamedTemporaryFile
+    >>> from mailman.testing.tempfile import NamedTemporaryFile
+    >>> from mailman.utilities.filesystem import File, open
     >>> filename = cleanups.enter_context(NamedTemporaryFile()).name
     >>> with open(filename, 'w', encoding='utf-8') as fp:
     ...     print("""\
@@ -124,6 +125,7 @@ taken from standard input.
 Blank lines and lines that begin with '#' are ignored.
 ::
 
+    >>> from mailman.utilities.filesystem import File, open
     >>> with open(filename, 'w', encoding='utf-8') as fp:
     ...     print("""\
     ... #cperson@example.com
@@ -143,6 +145,7 @@ Blank lines and lines that begin with '#' are ignored.
 If there is nothing to do, it will output just that.
 ::
 
+    >>> from mailman.utilities.filesystem import open
     >>> with open(filename, 'w', encoding='utf-8') as fp:
     ...     print("""\
     ... bperson@example.com

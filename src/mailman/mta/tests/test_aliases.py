@@ -17,16 +17,16 @@
 
 """Test the MTA file generating utility."""
 
-import os
-import shutil
-import tempfile
 import unittest
 
 from mailman.app.lifecycle import create_list
 from mailman.interfaces.domain import IDomainManager
 from mailman.interfaces.mta import IMailTransportAgentAliases
 from mailman.mta.postfix import LMTP
+from mailman.testing.helpers import skipWindows
 from mailman.testing.layers import ConfigLayer
+from mailman.testing.tempfile import TemporaryDirectory
+from mailman.utilities.filesystem import File
 from zope.component import getUtility
 
 
@@ -128,29 +128,31 @@ class TestPostfix(unittest.TestCase):
     layer = ConfigLayer
 
     def setUp(self):
-        self.tempdir = tempfile.mkdtemp()
-        self.addCleanup(shutil.rmtree, self.tempdir)
+        self.tempdir = TemporaryDirectory()
         self.utility = getUtility(IMailTransportAgentAliases)
         self.mlist = create_list('test@example.com')
         self.postfix = LMTP()
         # Let assertMultiLineEqual work without bounds.
         self.maxDiff = None
 
+    def tearDown(self):
+        self.tempdir.cleanup()
+
     def test_aliases(self):
         # Test the format of the Postfix alias generator.
         self.postfix.regenerate(self.tempdir)
         # There are two files in this directory.
-        self.assertEqual(sorted(os.listdir(self.tempdir)),
+        self.assertEqual(sorted_os_listdir(self.tempdir),
                          ['postfix_domains', 'postfix_lmtp'])
         # The domains file, just contains the example.com domain.  We have to
         # ignore the file header.
-        with open(os.path.join(self.tempdir, 'postfix_domains')) as fp:
+        with File(self.tempdir, 'postfix_domains') as fp:
             contents = _strip_header(fp.read())
         self.assertMultiLineEqual(contents, """\
 example.com example.com
 """)
         # The lmtp file contains transport mappings to the lmtp server.
-        with open(os.path.join(self.tempdir, 'postfix_lmtp')) as fp:
+        with File(self.tempdir, 'postfix_lmtp') as fp:
             contents = _strip_header(fp.read())
         self.assertMultiLineEqual(contents, """\
 # Aliases which are visible only in the @example.com domain.
@@ -171,17 +173,17 @@ test-unsubscribe@example.com           lmtp:[127.0.0.1]:9024
         create_list('other@example.com')
         self.postfix.regenerate(self.tempdir)
         # There are two files in this directory.
-        self.assertEqual(sorted(os.listdir(self.tempdir)),
+        self.assertEqual(sorted_os_listdir(self.tempdir),
                          ['postfix_domains', 'postfix_lmtp'])
         # Because both lists are in the same domain, there should be only one
         # entry in the relays file.
-        with open(os.path.join(self.tempdir, 'postfix_domains')) as fp:
+        with File(self.tempdir, 'postfix_domains') as fp:
             contents = _strip_header(fp.read())
         self.assertMultiLineEqual(contents, """\
 example.com example.com
 """)
         # The transport file contains entries for both lists.
-        with open(os.path.join(self.tempdir, 'postfix_lmtp')) as fp:
+        with File(self.tempdir, 'postfix_lmtp') as fp:
             contents = _strip_header(fp.read())
         self.assertMultiLineEqual(contents, """\
 # Aliases which are visible only in the @example.com domain.
@@ -214,18 +216,18 @@ test-unsubscribe@example.com           lmtp:[127.0.0.1]:9024
         create_list('other@example.net')
         self.postfix.regenerate(self.tempdir)
         # There are two files in this directory.
-        self.assertEqual(sorted(os.listdir(self.tempdir)),
+        self.assertEqual(sorted_os_listdir(self.tempdir),
                          ['postfix_domains', 'postfix_lmtp'])
         # Because the lists are in different domains, there should be two
         # entries in the relays file.
-        with open(os.path.join(self.tempdir, 'postfix_domains')) as fp:
+        with File(self.tempdir, 'postfix_domains') as fp:
             contents = _strip_header(fp.read())
         self.assertMultiLineEqual(contents, """\
 example.com example.com
 example.net example.net
 """)
         # The transport file contains entries for both lists.
-        with open(os.path.join(self.tempdir, 'postfix_lmtp')) as fp:
+        with File(self.tempdir, 'postfix_lmtp') as fp:
             contents = _strip_header(fp.read())
         self.assertMultiLineEqual(contents, """\
 # Aliases which are visible only in the @example.com domain.
@@ -251,6 +253,7 @@ other-subscribe@example.net             lmtp:[127.0.0.1]:9024
 other-unsubscribe@example.net           lmtp:[127.0.0.1]:9024
 """)
 
+    @skipWindows
     def test_missing_postmap_command_raises_runtime_errorr(self):
         # Changing the postmap command to false will always
         # return a non-zero exit code.
@@ -263,7 +266,7 @@ other-unsubscribe@example.net           lmtp:[127.0.0.1]:9024
         self.postfix.postmap_command = 'true'
         self.postfix.regenerate(self.tempdir)
         # There should be two files in the tempdir.
-        self.assertEqual(sorted(os.listdir(self.tempdir)),
+        self.assertEqual(sorted_os_listdir(self.tempdir),
                          ['postfix_domains', 'postfix_lmtp'])
 
     def test_aliases_regex(self):
@@ -272,13 +275,13 @@ other-unsubscribe@example.net           lmtp:[127.0.0.1]:9024
         self.postfix.transport_file_type = 'regex'
         self.postfix.regenerate(self.tempdir)
         # The domains file just contains the example.com domain.
-        with open(os.path.join(self.tempdir, 'postfix_domains')) as fp:
+        with File(self.tempdir, 'postfix_domains') as fp:
             contents = _strip_header(fp.read())
         self.assertMultiLineEqual(contents, """\
 /^example\\.com$/ example.com
 """)
         # the    lmtp file contains transport mapping to the lmtp server.
-        with open(os.path.join(self.tempdir, 'postfix_lmtp')) as fp:
+        with File(self.tempdir, 'postfix_lmtp') as fp:
             contents = _strip_header(fp.read())
         self.assertMultiLineEqual(contents, """\
 # Aliases which are visible only in the @example.com domain.
@@ -298,12 +301,12 @@ other-unsubscribe@example.net           lmtp:[127.0.0.1]:9024
         self.postfix.transport_file_type = 'regex'
         create_list('test.list.name.dots@example.com')
         self.postfix.regenerate(self.tempdir)
-        with open(os.path.join(self.tempdir, 'postfix_domains')) as fp:
+        with File(self.tempdir, 'postfix_domains') as fp:
             contents = _strip_header(fp.read())
         self.assertMultiLineEqual(contents, """\
 /^example\\.com$/ example.com
 """)
-        with open(os.path.join(self.tempdir, 'postfix_lmtp')) as fp:
+        with File(self.tempdir, 'postfix_lmtp') as fp:
             contents = _strip_header(fp.read())
         self.assertMultiLineEqual(contents, """\
 # Aliases which are visible only in the @example.com domain.
@@ -351,11 +354,11 @@ other-unsubscribe@example.net           lmtp:[127.0.0.1]:9024
         create_list('third@example.org')
         self.postfix.regenerate(self.tempdir)
         # There are three files in this directory.
-        self.assertEqual(sorted(os.listdir(self.tempdir)),
+        self.assertEqual(sorted_os_listdir(self.tempdir),
                          ['postfix_domains', 'postfix_lmtp', 'postfix_vmap'])
         # Because the lists are in different domains, there should be three
         # entries in the relays file.
-        with open(os.path.join(self.tempdir, 'postfix_domains')) as fp:
+        with File(self.tempdir, 'postfix_domains') as fp:
             contents = _strip_header(fp.read())
         self.assertMultiLineEqual(contents, """\
 example.com example.com
@@ -363,7 +366,7 @@ example.net example.net
 x.example.org example.org
 """)
         # The transport file contains entries for all three lists.
-        with open(os.path.join(self.tempdir, 'postfix_lmtp')) as fp:
+        with File(self.tempdir, 'postfix_lmtp') as fp:
             contents = _strip_header(fp.read())
         self.assertMultiLineEqual(contents, """\
 # Aliases which are visible only in the @example.com domain.
@@ -401,7 +404,7 @@ third-unsubscribe@x.example.org            lmtp:[127.0.0.1]:9024
 """)
         # The virtual mapping contains only entries for the list with an
         # alias_domain.
-        with open(os.path.join(self.tempdir, 'postfix_vmap')) as fp:
+        with File(self.tempdir, 'postfix_vmap') as fp:
             contents = _strip_header(fp.read())
         self.assertMultiLineEqual(contents, """\
 # Virtual mappings for the @example.org domain.
@@ -424,18 +427,18 @@ third-unsubscribe@example.org             third-unsubscribe@x.example.org
         create_list('other@example.org')
         self.postfix.regenerate(self.tempdir)
         # There are three files in this directory.
-        self.assertEqual(sorted(os.listdir(self.tempdir)),
+        self.assertEqual(sorted_os_listdir(self.tempdir),
                          ['postfix_domains', 'postfix_lmtp', 'postfix_vmap'])
         # Because the lists are in different domains, there should be two
         # entries in the relays file.
-        with open(os.path.join(self.tempdir, 'postfix_domains')) as fp:
+        with File(self.tempdir, 'postfix_domains') as fp:
             contents = _strip_header(fp.read())
         self.assertMultiLineEqual(contents, """\
 /^example\\.com$/ example.com
 /^x\\.example\\.org$/ example.org
 """)
         # The transport file contains entries for both lists.
-        with open(os.path.join(self.tempdir, 'postfix_lmtp')) as fp:
+        with File(self.tempdir, 'postfix_lmtp') as fp:
             contents = _strip_header(fp.read())
         self.assertMultiLineEqual(contents, """\
 # Aliases which are visible only in the @example.com domain.
@@ -462,7 +465,7 @@ third-unsubscribe@example.org             third-unsubscribe@x.example.org
 """)
         # The virtual mapping contains only entries for the list with an
         # alias_domain.
-        with open(os.path.join(self.tempdir, 'postfix_vmap')) as fp:
+        with File(self.tempdir, 'postfix_vmap') as fp:
             contents = _strip_header(fp.read())
         self.assertMultiLineEqual(contents, """\
 # Virtual mappings for the @example.org domain.
@@ -483,11 +486,11 @@ third-unsubscribe@example.org             third-unsubscribe@x.example.org
         create_list('llista1@grups.mailsandbox.xxxxxx.org')
         self.postfix.regenerate(self.tempdir)
         # There are three files in this directory.
-        self.assertEqual(sorted(os.listdir(self.tempdir)),
+        self.assertEqual(sorted_os_listdir(self.tempdir),
                          ['postfix_domains', 'postfix_lmtp', 'postfix_vmap'])
         # Make sure vmap files has two columns instead of one overflowing and
         # merging to other.
-        with open(os.path.join(self.tempdir, 'postfix_vmap')) as fp:
+        with File(self.tempdir, 'postfix_vmap') as fp:
             contents = _strip_header(fp.read())
         self.assertMultiLineEqual(contents, """\
 # Virtual mappings for the @grups.mailsandbox.xxxxxx.org domain.
@@ -501,3 +504,13 @@ llista1-request@grups.mailsandbox.xxxxxx.org                 llista1-request@mai
 llista1-subscribe@grups.mailsandbox.xxxxxx.org               llista1-subscribe@mail-ng.xxxxxx.org
 llista1-unsubscribe@grups.mailsandbox.xxxxxx.org             llista1-unsubscribe@mail-ng.xxxxxx.org
 """)   # noqa: E501
+
+
+def sorted_os_listdir(tempdir):
+    """Return sorted postfix source file names, ignoring sidecar files."""
+    return sorted(
+        p.name for p in tempdir.iterdir()
+        if p.suffix != '.created-db'
+    )
+
+

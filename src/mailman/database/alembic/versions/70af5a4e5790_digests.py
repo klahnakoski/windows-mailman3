@@ -11,7 +11,7 @@ import sqlalchemy as sa
 
 from alembic import op
 from mailman.config import config
-
+from mailman.utilities.filesystem import safe_rename
 
 # Revision identifiers, used by Alembic.
 revision = '70af5a4e5790'
@@ -32,7 +32,7 @@ def upgrade():
             listname, at, domain = dirname.partition('@')
             new_name = os.path.join(config.LIST_DATA_DIR,
                                     '{}.{}'.format(listname, domain))
-            os.rename(old_name, new_name)
+            safe_rename(old_name, new_name)
 
 
 def downgrade():
@@ -48,4 +48,4 @@ def downgrade():
             listname, domain = dirname.split('.', 1)
             new_name = os.path.join(config.LIST_DATA_DIR,
                                     '{}@{}'.format(listname, domain))
-            os.rename(old_name, new_name)
+            safe_rename(old_name, new_name)

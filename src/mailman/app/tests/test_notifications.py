@@ -18,7 +18,6 @@
 
 """Test notifications."""
 
-import os
 import re
 import unittest
 
@@ -37,8 +36,9 @@ from mailman.testing.helpers import (
     subscribe,
 )
 from mailman.testing.layers import ConfigLayer
+from mailman.testing.tempfile import TemporaryDirectory
 from mailman.utilities.datetime import now
-from tempfile import TemporaryDirectory
+from mailman.utilities.filesystem import File, open
 from zope.component import getUtility
 
 
@@ -63,9 +63,8 @@ class TestNotifications(unittest.TestCase):
         """.format(self.var_dir))
         resources.callback(config.pop, 'template config')
         # Populate the template directories with a few fake templates.
-        path = os.path.join(self.var_dir, 'templates', 'site', 'en')
-        os.makedirs(path)
-        full_path = os.path.join(path, 'list:user:notice:welcome.txt')
+        path = File(self.var_dir, 'templates', 'site', 'en')
+        full_path = path / 'list:user:notice:welcome.txt'
         with open(full_path, 'w', encoding='utf-8') as fp:
             print("""\
 Welcome to the $list_name mailing list.
@@ -75,27 +74,23 @@ Welcome to the $list_name mailing list.
     Your name: $user_name
     Your address: $user_address""", file=fp)
         # Write a goodbye message.
-        full_path = os.path.join(path, 'list:user:notice:goodbye.txt')
+        full_path = path / 'list:user:notice:goodbye.txt'
         with open(full_path, 'w', encoding='utf-8') as fp:
             print('$user_email just left the $list_name mailing list!',
                   file=fp)
         # Write a list-specific welcome message.
-        path = os.path.join(self.var_dir, 'templates', 'lists',
-                            'test@example.com', 'xx')
-        os.makedirs(path)
-        full_path = os.path.join(path, 'list:user:notice:welcome.txt')
+        path = File(self.var_dir, 'templates', 'lists','test@example.com', 'xx')
+        full_path = path / 'list:user:notice:welcome.txt'
         with open(full_path, 'w', encoding='utf-8') as fp:
             print('You just joined the $list_name mailing list!', file=fp)
         # Write a list-specific welcome message with non-ascii.
-        path = os.path.join(self.var_dir, 'templates', 'lists',
-                            'test@example.com', 'yy')
-        os.makedirs(path)
-        full_path = os.path.join(path, 'list:user:notice:welcome.txt')
+        path = File(self.var_dir, 'templates', 'lists', 'test@example.com', 'yy')
+        full_path = path / 'list:user:notice:welcome.txt'
         with open(full_path, 'w', encoding='utf-8') as fp:
             print('Yöu just joined the $list_name mailing list!', file=fp)
         # Write a list-specific address confirmation message with non-ascii.
-        full_path = os.path.join(path, 'list:user:action:subscribe.txt')
-        with open(full_path, 'w', encoding='utf-8') as fp:
+        full_path = path / 'list:user:action:subscribe.txt'
+        with full_path.open('w', encoding='utf-8') as fp:
             print('Wé need your confirmation', file=fp)
 
     def test_welcome_message(self):

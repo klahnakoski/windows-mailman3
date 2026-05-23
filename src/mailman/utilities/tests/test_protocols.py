@@ -30,8 +30,9 @@ from contextlib import ExitStack
 from mailman.app.lifecycle import create_list
 from mailman.config import config
 from mailman.testing.layers import ConfigLayer
+from mailman.testing.tempfile import TemporaryDirectory
 from mailman.utilities import protocols
-from tempfile import TemporaryDirectory
+from mailman.utilities.filesystem import File
 from urllib.error import URLError
 
 
@@ -49,15 +50,14 @@ class TestProtocols(unittest.TestCase):
         resources.callback(config.pop, 'template config')
         # Put a demo template in the site directory.
         path = os.path.join(self.var_dir, 'templates', 'site', 'en')
-        os.makedirs(path)
-        with open(os.path.join(path, 'demo.txt'), 'w') as fp:
+        with File(os.path.join(path, 'demo.txt')).open('w') as fp:
             print('Test content', end='', file=fp)
         self._mlist = create_list('test@example.com')
 
     def test_file(self):
         with TemporaryDirectory() as tempdir:
             path = os.path.join(tempdir, 'my-file')
-            with open(path, 'w', encoding='utf-8') as fp:
+            with open(path, 'w') as fp:
                 print('Some contents', end='', file=fp)
             contents = protocols.get('file:///{}'.format(path))
             self.assertEqual(contents, 'Some contents')
@@ -73,7 +73,7 @@ class TestProtocols(unittest.TestCase):
     def test_file_ascii(self):
         with TemporaryDirectory() as tempdir:
             path = os.path.join(tempdir, 'my-file')
-            with open(path, 'w', encoding='us-ascii') as fp:
+            with open(path, 'w') as fp:
                 print('Some contents', end='', file=fp)
             contents = protocols.get('file:///{}'.format(path),
                                      encoding='us-ascii')
@@ -155,8 +155,7 @@ class TestProtocols(unittest.TestCase):
         # mailman://demo.txt with non-ascii content.
         test_text = b'\xe4\xb8\xad'
         path = os.path.join(self.var_dir, 'templates', 'site', 'it')
-        os.makedirs(path)
-        with open(os.path.join(path, 'demo.txt'), 'wb') as fp:
+        with File(path, 'demo.txt').open('wb') as fp:
             fp.write(test_text)
         content = protocols.get('mailman:///it/demo.txt')
         self.assertIsInstance(content, str)

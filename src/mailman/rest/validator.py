@@ -19,10 +19,10 @@
 
 import re
 
-from lazr.config import as_boolean
 from mailman.interfaces.address import IEmailValidator
 from mailman.interfaces.errors import MailmanError
 from mailman.interfaces.languages import ILanguageManager
+from mailman.utilities.lazr.config import as_boolean
 from mailman.rest.helpers import get_request_params
 from public import public
 from urllib.parse import urlparse

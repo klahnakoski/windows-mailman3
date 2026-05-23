@@ -28,10 +28,11 @@ import random
 import hashlib
 
 from contextlib import suppress
-from flufl.lock import Lock
 from mailman.config import config
+from mailman.lock import Lock
 from mailman.model.uid import UID
 from mailman.testing import layers
+from mailman.utilities.filesystem import File, open
 from public import public
 
 
@@ -109,9 +110,22 @@ class _PredictableIDGenerator:
                 return 1
 
     def reset(self):
-        with self._lock:
-            with open(self._uid_file, 'w') as fp:
-                fp.write('1')
+        # If the var_dir was cleaned up (e.g. between test layers),
+        # invalidate the cached lock so it gets recreated on next use.
+        if self._lockobj is not None and not os.path.isdir(
+                os.path.dirname(self._lock_file)):
+            self._lockobj = None
+            self._uid_file = None
+            self._lock_file = None
+            return
+        try:
+            with self._lock:
+                with open(self._uid_file, 'w') as fp:
+                    fp.write('1')
+        except (FileNotFoundError, OSError):
+            self._lockobj = None
+            self._uid_file = None
+            self._lock_file = None
 
 
 @public

@@ -49,19 +49,53 @@ footer for all mailing lists in our site.
 ::
 
     >>> import os, tempfile
-    >>> from mailman.config import config    
-    >>> template_dir = tempfile.mkdtemp()
-    >>> site_dir = os.path.join(template_dir, 'site', 'en')
+        >>> from mailman.config import config
+        >>> from mailman.utilities.filesystem import File, open
+        >>> from mailman.testing.tempfile import TemporaryDirectory
+        >>> template_dir = TemporaryDirectory()
+        >>> site_dir = template_dir / 'site' / 'en'
+        >>> os.makedirs(site_dir)
+        >>> config.push('templates', """
+        ... [paths.testing]
+        ... template_dir: {}
+        ... """.format(template_dir))
+
+        >>> myheader_path = site_dir / 'myheader.txt'
+        >>> with open(myheader_path, 'w') as fp:
+        ...     print('header', file=fp)
+        >>> myfooter_path = site_dir / 'myfooter.txt'
+        >>> with open(myfooter_path, 'w') as fp:
+        ...     print('footer', file=fp)
+
+    Adding these template URIs to the template manager sets the mailing list up to
+    use these templates.  Since these are site-global templates, we can use a
+    shorter path.
+
+        >>> from mailman.interfaces.template import ITemplateManager
+        >>> from zope.component import getUtility
+        >>> manager = getUtility(ITemplateManager)
+        >>> manager.set('list:member:regular:header',
+        ...             mlist.list_id, 'mailman:///myheader.txt')
+        >>> manager.set('list:member:regular:footer',
+        ...             mlist.list_id, 'mailman:///myfooter.txt')
+
+    Text messages that have no declared content type are, by default encoded in
+    ASCII.  When the mailing list's preferred language is
+    >>> from mailman.config import config
+    >>> from mailman.utilities.filesystem import File, open
+    >>> from mailman.testing.tempfile import TemporaryDirectory
+    >>> template_dir = TemporaryDirectory()
+    >>> site_dir = template_dir / 'site' / 'en'
     >>> os.makedirs(site_dir)
     >>> config.push('templates', """
     ... [paths.testing]
     ... template_dir: {}
     ... """.format(template_dir))
 
-    >>> myheader_path = os.path.join(site_dir, 'myheader.txt')
+    >>> myheader_path = site_dir / 'myheader.txt'
     >>> with open(myheader_path, 'w') as fp:
     ...     print('header', file=fp)
-    >>> myfooter_path = os.path.join(site_dir, 'myfooter.txt')
+    >>> myfooter_path = site_dir / 'myfooter.txt'
     >>> with open(myfooter_path, 'w') as fp:
     ...     print('footer', file=fp)
 
@@ -192,7 +226,7 @@ set, Mailman will still try to concatenate the header and footer, but it will
 convert the text to utf-8 and base-64 encode the message payload.
 ::
 
-    # 'ja' = Japanese; charset = 'UTF-8'
+    # 'ja' = Japanese; charset = 'euc-jp'
     >>> mlist.preferred_language = 'ja'
 
     >>> with open(myheader_path, 'w') as fp:
