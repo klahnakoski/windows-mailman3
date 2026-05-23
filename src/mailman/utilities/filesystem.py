@@ -327,7 +327,7 @@ class File:
     def remove(self):
         """Remove this file, silently ignoring if it does not exist."""
         with suppress(FileNotFoundError):
-            os.remove(path)
+            os.remove(self.os_path)
 
 
     # ------------------------------------------------------------------
