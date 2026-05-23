@@ -6,6 +6,8 @@ import sys
 import stat
 import datetime
 
+from mailman.utilities.filesystem import safe_open
+
 
 FSF = 'by the Free Software Foundation, Inc.'
 this_year = datetime.date.today().year
@@ -28,7 +30,7 @@ else:
 
 def do_file(path, owner):
     permissions = os.stat(path).st_mode & MODE
-    with open(path) as in_file, open(path + '.out', 'w') as out_file:
+    with safe_open(path) as in_file, safe_open(path + '.out', 'w') as out_file:
         try:
             for line in in_file:
                 mo_c = pyre_c.match(line)

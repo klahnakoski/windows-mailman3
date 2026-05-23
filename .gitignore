@@ -8,6 +8,10 @@ coverage.xml
 diffcov.html
 build
 dist
+test_output.txt
 .idea
 venv
 *.po~
+.run
+.idea
+
