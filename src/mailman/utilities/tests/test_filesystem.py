@@ -22,20 +22,14 @@ import shutil
 import tempfile
 import unittest
 
-from mailman.utilities.filesystem import File
+from unittest.mock import patch
 
-
-def fake_makedirs(path, mode, exist_ok=False):
-    """A fake makedirs function"""
-
-    with File(path).open('a'):
-        pass
-
-    raise FileExistsError("%s exists.", path)
+from mailman.utilities.filesystem import File, safe_rename
+from mailman.utilities.filesystem import sanitize_filename, sanitize_path
 
 
 class TestMakedirs(unittest.TestCase):
-    """Tests the makedirs utility function"""
+    """Tests filesystem helpers."""
 
     def setUp(self):
         self.test_directory = tempfile.mkdtemp()
@@ -44,3 +38,58 @@ class TestMakedirs(unittest.TestCase):
         self.foo = os.path.join(self.test_directory, "foo")
         self.bar = os.path.join(self.foo, "bar")
         self.baz = os.path.join(self.bar, "baz")
+
+    def test_open_creates_parent_directories(self):
+        with File(self.baz).open('w') as fp:
+            fp.write('hello')
+        self.assertTrue(File(self.baz).exists)
+        self.assertEqual(File(self.baz).read_text(), 'hello')
+
+    def test_makedirs_creates_directories(self):
+        created = File(self.bar).makedirs()
+        self.assertEqual(created, File(self.bar))
+        self.assertTrue(File(self.bar).is_dir)
+
+    def test_remove_deletes_file(self):
+        path = File(self.baz)
+        with path.open('w') as fp:
+            fp.write('x')
+        path.remove()
+        self.assertFalse(path.exists)
+
+    def test_remove_missing_is_ok(self):
+        File(self.baz).remove()
+        self.assertFalse(File(self.baz).exists)
+
+    def test_safe_rename_replaces_existing_file(self):
+        src = File(self.foo) / 'src.txt'
+        dst = File(self.foo) / 'dst.txt'
+        with src.open('w') as fp:
+            fp.write('src')
+        with dst.open('w') as fp:
+            fp.write('dst')
+
+        safe_rename(src.os_path, dst.os_path)
+
+        self.assertFalse(src.exists)
+        self.assertEqual(dst.read_text(), 'src')
+
+    def test_sanitize_filename_windows(self):
+        with patch('mailman.utilities.filesystem.sys.platform', 'win32'):
+            self.assertEqual(
+                sanitize_filename('a:b*c?d<e>f|g"h.txt'),
+                'a_b_c_d_e_f_g_h.txt',
+            )
+
+    def test_sanitize_path_windows(self):
+        with patch('mailman.utilities.filesystem.sys.platform', 'win32'):
+            self.assertEqual(
+                sanitize_path('/C:/tmp/a:b.txt'),
+                'C:/tmp/a_b.txt',
+            )
+
+    def test_sanitize_path_non_windows(self):
+        original = '/tmp/a:b.txt'
+        with patch('mailman.utilities.filesystem.sys.platform', 'linux'):
+            self.assertEqual(sanitize_path(original), original)
+

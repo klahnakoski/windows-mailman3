@@ -18,6 +18,7 @@
 """Test master watcher utilities."""
 
 import os
+import sys
 import time
 import signal
 import socket
@@ -363,3 +364,20 @@ Exiting.
                 pass
         m.thread.join()
         m.cleanup()
+
+
+@unittest.skipUnless(sys.platform == 'win32', 'Windows-only test')
+class TestMasterWindows(unittest.TestCase):
+    def test_acquire_lock_creates_missing_parent_directory(self):
+        with tempfile.TemporaryDirectory() as tempdir:
+            lock_dir = os.path.join(tempdir, 'missing')
+            lock_file = os.path.join(lock_dir, 'master.lck')
+            lock = Lock(lock_file)
+            lock.lock(timedelta(seconds=2))
+            try:
+                self.assertTrue(os.path.isdir(lock_dir))
+                self.assertTrue(os.path.exists(lock_file))
+            finally:
+                lock.unlock()
+
+

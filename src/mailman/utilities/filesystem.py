@@ -79,24 +79,6 @@ def sanitize_path(path):
     return drive + tail
 
 
-class Umask:
-    """Manage the umask for the with statement."""
-
-    def __init__(self, umask):
-        self._umask = umask
-        self._old_umask = None
-
-    def __enter__(self):
-        assert self._old_umask is None, "Unexpected existing umask"
-        self._old_umask = os.umask(self._umask)
-
-    def __exit__(self, *exc_info):
-        assert self._old_umask is not None, "No previous umask"
-        os.umask(self._old_umask)
-        # Do not suppress exceptions.
-        return False
-
-
 @public
 def safe_rename(src, dst):
     """Rename *src* to *dst*, working correctly on all platforms.
@@ -134,16 +116,6 @@ def safe_rename(src, dst):
             os.replace(src, dst)
 
 
-def safe_remove(path):
-    with suppress(FileNotFoundError):
-        os.remove(path)
-
-
-# ---------------------------------------------------------------------------
-# Public API
-# ---------------------------------------------------------------------------
-
-
 @public
 class File:
     """A cross-platform filesystem path.
@@ -171,7 +143,6 @@ class File:
 
     def __init__(self, *parts, **kwargs):
         # Normalise separators to forward slash.
-        # If the first part looks like a dotted Python package name (has a
         parts = [str(p) for p in parts]
         path = os.path.join(*parts)
         # On Windows, file URI paths and url2pathname() output can arrive as
@@ -335,11 +306,14 @@ class File:
 
     def makedirs(self, mode=0o0755):
         """Create this directory and all missing parents."""
-        with Umask(0):
+        old_umask = os.umask(0)
+        try:
             try:
                 os.makedirs(self.os_path, mode, exist_ok=True)
             except FileExistsError:
                 pass
+        finally:
+            os.umask(old_umask)
 
         for dirpath, dirnames, filenames in os.walk(self.os_path):
             with suppress(OSError):
@@ -352,11 +326,9 @@ class File:
 
     def remove(self):
         """Remove this file, silently ignoring if it does not exist."""
-        safe_remove(self.os_path)
+        with suppress(FileNotFoundError):
+            os.remove(path)
 
-    def unlink(self, missing_ok=True):
-        if self._fh:
-            self.__exit__()
 
     # ------------------------------------------------------------------
     # Static utilities

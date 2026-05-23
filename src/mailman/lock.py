@@ -334,7 +334,7 @@ else:
                 return False
             except OSError as e:
                 if e.errno == errno.ENOENT:
-                    File(self._lockfile).makedirs()
+                    File(self._lockfile).parent.makedirs()
                     return self._try_acquire()
                 raise
             try:
