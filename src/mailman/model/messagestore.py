@@ -27,7 +27,7 @@ from mailman.database.transaction import dbconnection
 from mailman.interfaces.messages import IMessageStore
 from mailman.model.message import Message
 from mailman.utilities.email import add_message_hash
-from mailman.utilities.filesystem import open, safe_remove, File
+from mailman.utilities.filesystem import open, File
 from public import public
 from zope.interface import implementer
 
