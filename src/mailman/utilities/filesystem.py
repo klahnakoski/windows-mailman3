@@ -71,28 +71,6 @@ if sys.platform != "win32":
 
 @public
 def safe_rename(src, dst):
-    """Rename *src* to *dst*, working correctly on all platforms.
-
-    On POSIX, :func:`os.rename` atomically replaces an existing destination
-    file and raises :exc:`OSError` only if *dst* is a non-empty directory.
-
-    On Windows, :func:`os.rename` raises :exc:`FileExistsError` whenever
-    *dst* already exists (file **or** directory), and :func:`os.replace`
-    raises :exc:`PermissionError` when *dst* is an existing directory.
-    This function normalises the behaviour:
-
-    * If *dst* is an existing file, use :func:`os.replace` for an atomic
-      overwrite (matching POSIX rename semantics).
-    * If *dst* is an existing **empty** directory, remove it first, then
-      rename, so that migrating a list data directory over the old path does
-      not fail.
-    * Otherwise delegate directly to :func:`os.rename`.
-
-    :param src: The source path.
-    :type src: str or path-like
-    :param dst: The destination path.
-    :type dst: str or path-like
-    """
     try:
         os.rename(src, dst)
     except FileExistsError:
