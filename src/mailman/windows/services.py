@@ -31,7 +31,7 @@ import sys
 import logging
 import threading
 
-from mailman.core.inline_pipeline import setup_inline_pipeline
+from mailman.windows.inline_pipeline import setup_inline_pipeline
 from mailman.runners.digest import DigestRunner
 from mailman.runners.lmtp import LMTPRunner
 from mailman.runners.retry import RetryRunner
