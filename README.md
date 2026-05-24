@@ -41,7 +41,10 @@ tox.exe -e py312-nocov -- -v mailman.commands.tests
 Run tests on Docker:
 
 ```
+git bundle create repo.bundle --all
 docker build -f dev/Dockerfile.test .
+del .\repo.bundle
+docker image rm mailman-build-local
 ```
 
 Run a single module
