@@ -1,6 +1,7 @@
 # Large runtime/build artefacts — not needed in the image
 .tox/
 .venv/
+.git/
 var/
 
 # Python bytecode

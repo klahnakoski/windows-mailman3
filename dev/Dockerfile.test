@@ -3,9 +3,33 @@ FROM ghcr.io/maxking/mailman-ci-runner:latest
 WORKDIR /work
 
 USER root
+# Ensure git is available
+RUN apt-get update -y && apt-get install -y --no-install-recommends git && rm -rf /var/lib/apt/lists/* /tmp/* /var/tmp/*
+
+# Copy the pre-built bundle into the image
 COPY repo.bundle /tmp/repo.bundle
-RUN git clone /tmp/repo.bundle /work
+
+# Create an empty repo in /work (no branch is checked out)
+RUN mkdir -p /work && git -C /work init
+
+# Fetch all heads from the bundle into refs/remotes/origin/* (safe: doesn't overwrite checked-out heads).
+# Then create local branches from those remote refs.
+RUN bash -lc "\
+  git -C /work remote add origin /tmp/repo.bundle && \
+  git -C /work fetch origin 'refs/heads/*:refs/remotes/origin/*' && \
+  for br in \$(git -C /work for-each-ref --format='%(refname:strip=3)' refs/remotes/origin); do \
+    git -C /work branch \"\$br\" \"refs/remotes/origin/\$br\"; \
+  done"
+
+
+# set committer identity for the repo (no --global)
+RUN git -C /work config user.email "ci@example.com" && \
+    git -C /work config user.name "CI Builder"
+
+# Mark repo safe, checkout the work branch and rebase
 RUN git -C /work config --global --add safe.directory /work
-RUN git 
-RUN git rebase --onto "master" "windows-rename" "windows-master" || (echo "Rebase failed"; exit 1)
+RUN git -C /work checkout windows-master || true
+RUN git -C /work rebase --onto master windows-rename windows-master
+
+# Run tests
 RUN tox -e py312-nocov
