@@ -1,0 +1,19 @@
+# Large runtime/build artefacts — not needed in the image
+.tox/
+.venv/
+var/
+
+# Python bytecode
+__pycache__/
+**/__pycache__/
+*.pyc
+*.pyo
+*.pyd
+
+# IDE
+.idea/
+*.iml
+
+# Test output
+test_output.txt
+

@@ -41,5 +41,11 @@ tox.exe -e py312-nocov -- -v mailman.commands.tests
 Run tests on Docker:
 
 ```
-docker run --rm -v C:\Users\kyle\code\mailman3:/mailman -w /mailman ghcr.io/maxking/mailman-ci-runner:latest tox -e py312-nocov
+docker build -f dev/Dockerfile.test .
+```
+
+Run a single module
+
+```
+docker build --build-arg NOSE_ARGS="mailman.app.tests.test_bounces" -f dev/Dockerfile.test .
 ```

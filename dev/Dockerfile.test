@@ -1,0 +1,13 @@
+FROM ghcr.io/maxking/mailman-ci-runner:latest
+
+WORKDIR /work
+
+COPY . .
+
+RUN git config --global --add safe.directory /work
+
+RUN git rebase --onto master windows-rename windows-master
+
+ARG NOSE_ARGS=""
+RUN tox -e py312-nocov -- $NOSE_ARGS
+
