@@ -2,12 +2,10 @@ FROM ghcr.io/maxking/mailman-ci-runner:latest
 
 WORKDIR /work
 
-COPY . .
-
-RUN git config --global --add safe.directory /work
-
-RUN git rebase --onto master windows-rename windows-master
-
-ARG NOSE_ARGS=""
-RUN tox -e py312-nocov -- $NOSE_ARGS
-
+USER root
+COPY repo.bundle /tmp/repo.bundle
+RUN git clone /tmp/repo.bundle /work
+RUN git -C /work config --global --add safe.directory /work
+RUN git 
+RUN git rebase --onto "master" "windows-rename" "windows-master" || (echo "Rebase failed"; exit 1)
+RUN tox -e py312-nocov
