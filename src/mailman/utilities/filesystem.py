@@ -328,17 +328,3 @@ class File:
         """Remove this file, silently ignoring if it does not exist."""
         with suppress(FileNotFoundError):
             os.remove(self.os_path)
-
-
-    # ------------------------------------------------------------------
-    # Static utilities
-    # ------------------------------------------------------------------
-
-    @staticmethod
-    def sanitize_name(name):
-        """Sanitize a bare filename for the current platform.
-
-        On Windows replaces characters invalid in filenames (``:``, ``*``,
-        etc.) with underscores.  On other platforms returns *name* unchanged.
-        """
-        return sanitize_filename(name)

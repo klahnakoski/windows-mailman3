@@ -37,3 +37,10 @@ Run specific test module:
 ```
 tox.exe -e py312-nocov -- -v mailman.commands.tests
 ```
+
+Run tests on Docker:
+
+```
+docker build -f dev/Dockerfile -t mailman3-tox:local .
+docker run --rm -t -v "${PWD}:/work" -w /work mailman3-tox:local tox -e py312-nocov
+```

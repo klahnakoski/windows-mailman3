@@ -24,7 +24,6 @@ written.  First, the message is written to the pickle, then the metadata
 dictionary is written.
 """
 
-import io
 import os
 import time
 import email
@@ -255,7 +254,7 @@ class Switchboard:
                                    filebase)
                         self.finish(filebase, preserve=True)
                     else:
-                        safe_ranme(src, dst)
+                        safe_rename(src, dst)
 
 
 @public

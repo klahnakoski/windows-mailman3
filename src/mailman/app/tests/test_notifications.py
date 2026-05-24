@@ -79,7 +79,8 @@ Welcome to the $list_name mailing list.
             print('$user_email just left the $list_name mailing list!',
                   file=fp)
         # Write a list-specific welcome message.
-        path = File(self.var_dir, 'templates', 'lists','test@example.com', 'xx')
+        path = File(self.var_dir, 'templates', 'lists',
+                    'test@example.com', 'xx')
         full_path = path / 'list:user:notice:welcome.txt'
         with open(full_path, 'w', encoding='utf-8') as fp:
             print('You just joined the $list_name mailing list!', file=fp)
