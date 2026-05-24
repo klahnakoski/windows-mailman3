@@ -58,6 +58,10 @@ NL = '\n'
 #: Use instead of ``@unittest.skipIf(sys.platform == 'win32', ...)``.
 skipWindows = public(skipIf(sys.platform == 'win32', 'Unix-only test'))
 
+#: Decorator that skips a test class or method on non-Windows platforms.
+#: Use for tests that exercise Windows-specific behaviour.
+skipLinux = public(skipIf(sys.platform != 'win32', 'Windows-only test'))
+
 
 @public
 def make_testable_runner(runner_class, name=None, predicate=None):

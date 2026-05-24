@@ -22,10 +22,10 @@ import shutil
 import tempfile
 import unittest
 
-from unittest.mock import patch
 
+from mailman.testing.helpers import skipLinux, skipWindows
 from mailman.utilities.filesystem import File, safe_rename
-from mailman.utilities.filesystem import sanitize_filename, sanitize_path
+from mailman.utilities.filesystem import sanitize_path
 
 
 class TestMakedirs(unittest.TestCase):
@@ -74,22 +74,22 @@ class TestMakedirs(unittest.TestCase):
         self.assertFalse(src.exists)
         self.assertEqual(dst.read_text(), 'src')
 
-    def test_sanitize_filename_windows(self):
-        with patch('mailman.utilities.filesystem.sys.platform', 'win32'):
-            self.assertEqual(
-                sanitize_filename('a:b*c?d<e>f|g"h.txt'),
-                'a_b_c_d_e_f_g_h.txt',
-            )
+    @skipLinux
+    def test_sanitize_path_unsafe_chars(self):
+        self.assertEqual(
+            sanitize_path('list:admin:action:post.txt'),
+            'list_admin_action_post.txt',
+        )
 
+    @skipLinux
     def test_sanitize_path_windows(self):
-        with patch('mailman.utilities.filesystem.sys.platform', 'win32'):
-            self.assertEqual(
-                sanitize_path('/C:/tmp/a:b.txt'),
-                'C:/tmp/a_b.txt',
-            )
+        self.assertEqual(
+            sanitize_path('/C:/tmp/a:b.txt'),
+            'C:/tmp/a_b.txt',
+        )
 
+    @skipWindows
     def test_sanitize_path_non_windows(self):
         original = '/tmp/a:b.txt'
-        with patch('mailman.utilities.filesystem.sys.platform', 'linux'):
-            self.assertEqual(sanitize_path(original), original)
+        self.assertEqual(sanitize_path(original), original)
 

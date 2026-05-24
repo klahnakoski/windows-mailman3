@@ -35,48 +35,38 @@ def open(path, mode="r", **kwargs):
     return File(path).open(mode, **kwargs)
 
 
-def sanitize_filename(name):
-    """Sanitize a bare filename (no directory separators) for the platform.
-
-    On Windows, characters invalid in filenames (``:``, ``*``, etc.) are
-    replaced with underscores.  On other platforms the name is returned
-    unchanged.
-
-    :param name: The filename to sanitize.
-    :type name: str
-    :return: The sanitized filename.
-    :rtype: str
-    """
-    if sys.platform != "win32":
-        return name
-    for ch in WINDOWS_UNSAFE_CHARS:
-        name = name.replace(ch, "_")
-    return name
-
-
 def sanitize_path(path):
-    """Sanitize a filesystem path for the current platform.
+    """Sanitize a filesystem path (or bare filename) for Windows.
 
-    On Windows, characters like colons are replaced with underscores
-    (except for the drive letter prefix, e.g. ``C:\\``).  On other
-    platforms the path is returned unchanged.
+    Characters invalid in Windows filenames (``:``, ``*``, ``?``, etc.)
+    are replaced with underscores.  The drive letter prefix (e.g. ``C:``)
+    is preserved when present.
 
-    :param path: The filesystem path to sanitize.
+    :param path: The filesystem path or filename to sanitize.
     :type path: str
     :return: The sanitized path.
     :rtype: str
     """
-    if sys.platform != "win32":
-        return path
     path = path.os_path if hasattr(path, "os_path") else str(path)
-    # File URIs on Windows arrive as /C:\... or /C:/... — strip leading slash.
+    # File URIs on Windows arrive as /C:\... or /C:/... — strip leading
+    # slash.
     if len(path) >= 3 and path[0] == "/" and path[2] in (":", "|"):
         path = path[1:]
-    # Preserve drive letter (e.g. C:\)
-    drive, tail = os.path.splitdrive(path)
+    # Preserve Windows drive letter (e.g. C:\ or C:/).
+    # Use an explicit check rather than os.path.splitdrive so this works
+    # correctly on Linux hosts (splitdrive does not parse Windows paths on
+    # POSIX).
+    if len(path) >= 2 and path[0].isalpha() and path[1] == ":":
+        drive, tail = path[:2], path[2:]
+    else:
+        drive, tail = "", path
     for ch in WINDOWS_UNSAFE_CHARS:
         tail = tail.replace(ch, "_")
     return drive + tail
+
+if sys.platform != "win32":
+    def sanitize_path(path):
+        return path
 
 
 @public

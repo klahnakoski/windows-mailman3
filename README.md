@@ -41,6 +41,5 @@ tox.exe -e py312-nocov -- -v mailman.commands.tests
 Run tests on Docker:
 
 ```
-docker build -f dev/Dockerfile -t mailman3-tox:local .
-docker run --rm -t -v "${PWD}:/work" -w /work mailman3-tox:local tox -e py312-nocov
+docker run --rm -v C:\Users\kyle\code\mailman3:/mailman -w /mailman ghcr.io/maxking/mailman-ci-runner:latest tox -e py312-nocov
 ```
